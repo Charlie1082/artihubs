@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Artihubs | Makers meet Seekers</title>
-    <meta name="description" content="Artihubs helps independent makers and seekers find each other by capability, region, and intent." />
+    <title>Artihubs | Borderless Maker Discovery</title>
+    <meta name="description" content="Artihubs is a living directory for independent makers, inventors, solo manufacturers, software builders, and seekers who need specific capabilities." />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="page">
-      <nav class="nav">
-        <a class="brand" href="./">Artihubs</a>
+    <main class="page home-page">
+      <nav class="nav home-nav">
+        <a class="brand" href="./" aria-label="Artihubs home">Artihubs</a>
         <div class="nav-links" aria-label="Primary navigation">
           <a href="./living-globe-v2/">Living Globe</a>
           <a href="./for-makers/">For Makers</a>
@@ -19,47 +19,103 @@
         </div>
       </nav>
 
-      <section class="hero">
-        <div>
+      <section class="home-hero" aria-labelledby="home-title">
+        <div class="home-copy">
           <p class="eyebrow">Borderless maker discovery</p>
-          <h1>Find the independent capability you need.</h1>
-          <p class="lede">Artihubs connects makers, inventors, solo manufacturers, software builders, and small expert teams with seekers who are searching for specific things to build, buy, test, or commission.</p>
+          <h1 id="home-title">Find the people who can make what you need.</h1>
+          <p class="lede">Artihubs connects independent makers, inventors, solo manufacturers, software builders, and small expert teams with seekers searching by capability, region, and intent.</p>
           <div class="actions">
-            <a class="button primary" href="./living-globe-v2/">Open the living globe</a>
+            <a class="button primary" href="./living-globe-v2/">Enter the living globe</a>
             <a class="button secondary" href="./explore/">Explore maker hubs</a>
           </div>
+          <dl class="home-stats" aria-label="Artihubs prototype signals">
+            <div>
+              <dt>Region-first</dt>
+              <dd>Country and region signals, no street-level exposure.</dd>
+            </div>
+            <div>
+              <dt>Capability-led</dt>
+              <dd>Discovery built around what someone can build or source.</dd>
+            </div>
+            <div>
+              <dt>Maker pride</dt>
+              <dd>Each new maker lights a real place on the globe.</dd>
+            </div>
+          </dl>
         </div>
-        <aside class="hero-panel" aria-label="Artihubs signal preview">
-          <div class="signal-map">
-            <span class="signal"></span>
-            <span class="signal"></span>
-            <span class="signal"></span>
-            <p class="signal-copy">Each new Artihubs Maker adds a light to a real region, then becomes discoverable by capability rather than follower count.</p>
-          </div>
-        </aside>
+
+        <div class="home-globe" aria-label="Artihubs living globe preview">
+          <iframe
+            class="home-globe-frame"
+            title="Interactive Artihubs living globe"
+            src="./living-globe-v2/?embed=landing"
+            loading="eager"
+          ></iframe>
+        </div>
       </section>
 
-      <section class="section">
-        <div class="section-head">
-          <h2>Two sides, one search layer.</h2>
-          <p>Social platforms reward constant self-promotion. Artihubs is designed around intent: what someone makes, what someone needs, and how they can start a trustworthy first conversation.</p>
+      <section class="home-band" aria-labelledby="paths-title">
+        <div class="home-section-head">
+          <p class="eyebrow">Three entry points</p>
+          <h2 id="paths-title">A marketplace starts before the transaction.</h2>
+          <p>Artihubs begins with discovery, then creates a clearer path toward contact, samples, contracts, and purchase workflows as the platform matures.</p>
         </div>
-        <div class="grid">
-          <article class="card">
+        <div class="path-grid">
+          <article class="path-card">
+            <span class="path-number">01</span>
             <h3>For Makers</h3>
-            <p>Register a profile that shows what you make, what you can make, and which region you are willing to represent without exposing your exact address.</p>
-            <a class="button secondary" href="./for-makers/">Maker page</a>
+            <p>Show what you make, what you can make, where your regional signal belongs, and what kind of request you are open to receiving.</p>
+            <a class="button secondary" href="./for-makers/">Register interest</a>
           </article>
-          <article class="card">
+          <article class="path-card">
+            <span class="path-number">02</span>
             <h3>For Seekers</h3>
-            <p>Describe the part, tool, software, prototype, or production capability you need, then move from search to a guided request.</p>
-            <a class="button secondary" href="./for-seekers/">Seeker page</a>
+            <p>Describe the part, tool, prototype, software, repair path, or production capability you need without guessing which channel will surface it.</p>
+            <a class="button secondary" href="./for-seekers/">Start a request</a>
           </article>
-          <article class="card">
+          <article class="path-card">
+            <span class="path-number">03</span>
             <h3>Explore Hubs</h3>
-            <p>Browse early maker examples by field, country, and region. This page becomes the first directory surface connected to the globe.</p>
-            <a class="button secondary" href="./explore/">Directory page</a>
+            <p>Browse makers by field and region. A lit place on the globe can become a filtered directory view for that country or local area.</p>
+            <a class="button secondary" href="./explore/">Open directory</a>
           </article>
+        </div>
+      </section>
+
+      <section class="home-band home-flow" aria-labelledby="flow-title">
+        <div class="home-section-head">
+          <p class="eyebrow">From signal to conversation</p>
+          <h2 id="flow-title">Designed for people hidden outside the social algorithm.</h2>
+        </div>
+        <div class="flow-rail">
+          <div>
+            <strong>Maker appears</strong>
+            <p>A maker adds a capability profile and lights a region on the globe.</p>
+          </div>
+          <div>
+            <strong>Seeker searches</strong>
+            <p>A seeker filters by problem, material, software, field, country, or region.</p>
+          </div>
+          <div>
+            <strong>Intro request</strong>
+            <p>Artihubs captures the request and prepares the first trustworthy handoff.</p>
+          </div>
+          <div>
+            <strong>Future workflows</strong>
+            <p>Sample transfer, contract templates, payment, and logistics can be layered in later.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-final" aria-labelledby="first-wave-title">
+        <div>
+          <p class="eyebrow">First wave</p>
+          <h2 id="first-wave-title">Artihubs is opening with makers and seekers who know the pain of being hard to find.</h2>
+        </div>
+        <div class="home-final-actions">
+          <a class="button primary" href="./for-makers/">Join as a maker</a>
+          <a class="button secondary" href="./for-seekers/">Request a maker</a>
+          <a class="button secondary" href="mailto:hello@artihubs.com">hello@artihubs.com</a>
         </div>
       </section>
 

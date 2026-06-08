@@ -523,3 +523,50 @@ a {
     height: 9px;
   }
 }
+
+html.is-embedded-globe,
+html.is-embedded-globe body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+html.is-embedded-globe .shell {
+  min-height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+html.is-embedded-globe .nav,
+html.is-embedded-globe .copy,
+html.is-embedded-globe .directory {
+  display: none;
+}
+
+html.is-embedded-globe .hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  padding: 0;
+}
+
+html.is-embedded-globe .globe-wrap {
+  min-height: 100vh;
+  width: 100%;
+}
+
+html.is-embedded-globe .globe-stage {
+  width: min(96vmin, 850px);
+}
+
+html.is-embedded-globe .globe-stage::after {
+  box-shadow:
+    0 0 92px rgba(76, 157, 255, 0.16),
+    inset -34px -40px 84px rgba(0, 0, 0, 0.78);
+}
+
+html.is-embedded-globe .marker {
+  width: 8px;
+  height: 8px;
+}
