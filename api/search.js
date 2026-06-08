@@ -32,64 +32,9 @@ function normalize(value) {
     .toLowerCase();
 }
 
-function tokenize(query) {
-  const expanded = normalize(query)
-    .replace(/\bparts?\b/g, "part component fixture housing")
-    .replace(/\brobot\b/g, "robot robotics automation motion")
-    .replace(/\bwater\s*proof\b/g, "waterproof marine sealed housing")
-    .replace(/\bai\b/g, "ai software automation workflow")
-    .replace(/\brepair\b/g, "repair repairable kit maintenance");
-
-  return [...new Set(expanded.split(/[^a-z0-9]+/).filter((token) => token.length > 1))];
-}
-
-function makerText(maker) {
-  return normalize([
-    maker.name,
-    maker.country,
-    maker.region,
-    maker.field,
-    maker.capability,
-    maker.summary,
-    ...(maker.tags || [])
-  ].join(" "));
-}
-
-function localRank(makers, query) {
-  const tokens = tokenize(query);
-  const hasQuery = tokens.length > 0;
-
-  return makers
-    .map((maker) => {
-      const text = makerText(maker);
-      let score = hasQuery ? 0 : 0.35;
-
-      tokens.forEach((token) => {
-        if (normalize(maker.name).includes(token)) score += 4;
-        if (normalize(maker.capability).includes(token)) score += 3.2;
-        if (normalize(maker.field).includes(token)) score += 2.8;
-        if (normalize(maker.tags.join(" ")).includes(token)) score += 2.2;
-        if (normalize(`${maker.country} ${maker.region}`).includes(token)) score += 1.6;
-        if (text.includes(token)) score += 1;
-      });
-
-      return {
-        ...maker,
-        rankSource: "fallback",
-        relevance: Math.min(0.99, score / Math.max(4, tokens.length * 2.8)),
-        reason: hasQuery
-          ? `Matched against capability, region, tags, and profile text for "${query}".`
-          : "Shown as a current Artihubs prototype profile."
-      };
-    })
-    .filter((maker) => !hasQuery || maker.relevance > 0)
-    .sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name))
-    .slice(0, 8);
-}
-
-function relevanceScore(value, fallback = 0.82) {
+function relevanceScore(value, defaultScore = 0.82) {
   const score = Number(value);
-  if (!Number.isFinite(score)) return fallback;
+  if (!Number.isFinite(score)) return defaultScore;
   return Math.max(0, Math.min(1, score));
 }
 
@@ -104,7 +49,7 @@ function extractJson(text) {
   }
 }
 
-function mergeClaudeMatches(makers, claudeMatches, fallbackMatches) {
+function mergeClaudeMatches(makers, claudeMatches) {
   const makerByName = new Map(makers.map((maker) => [normalize(maker.name), maker]));
   const used = new Set();
   const merged = [];
@@ -122,14 +67,10 @@ function mergeClaudeMatches(makers, claudeMatches, fallbackMatches) {
     });
   });
 
-  if (merged.length > 0) {
-    return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, 8);
-  }
-
-  return fallbackMatches;
+  return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, 8);
 }
 
-async function claudeRank({ apiKey, query, makers, fallbackMatches }) {
+async function claudeRank({ apiKey, query, makers }) {
   const prompt = {
     query,
     makers: makers.map((maker) => ({
@@ -155,12 +96,12 @@ async function claudeRank({ apiKey, query, makers, fallbackMatches }) {
       max_tokens: 900,
       temperature: 0,
       system:
-        "You are Artihubs Engineering Search. Match a user's natural-language need to ONLY the provided maker profiles. Do not invent makers, capabilities, countries, or regions. Return strict JSON only.",
+        "You are Artihubs Engineering Search. Match a user's natural-language need to ONLY the provided maker profiles. Queries may be written in Korean, English, Japanese, or mixed language; interpret the intent semantically before ranking. Do not invent makers, capabilities, countries, or regions. If no provided maker is meaningfully relevant, return an empty matches array. Return strict JSON only.",
       messages: [
         {
           role: "user",
           content:
-            "Rank Artihubs Makers for this query. Return JSON with this exact shape: {\"summary\":\"short search interpretation\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"why this maker matches\",\"suggestedIntro\":\"short intro request angle\"}]}. Use relevance from 0 to 1. Keep at most 8 matches.\n\n" +
+            "Rank Artihubs Makers for this query. Return JSON with this exact shape: {\"summary\":\"short search interpretation\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"why this maker matches\",\"suggestedIntro\":\"short intro request angle\"}]}. Use relevance from 0 to 1. Keep at most 8 matches. Keep only meaningfully relevant makers; do not pad the result list. Write the summary and reasons in the user's query language when clear.\n\n" +
             JSON.stringify(prompt)
         }
       ]
@@ -179,7 +120,7 @@ async function claudeRank({ apiKey, query, makers, fallbackMatches }) {
     mode: "claude",
     model: CLAUDE_SEARCH_MODEL,
     summary: String(parsed.summary || "Claude ranked makers for the request.").slice(0, 300),
-    matches: mergeClaudeMatches(makers, parsed.matches, fallbackMatches)
+    matches: mergeClaudeMatches(makers, parsed.matches)
   };
 }
 
@@ -199,43 +140,38 @@ module.exports = async function handler(request, response) {
 
   const query = String(payload.query || "").trim().slice(0, MAX_QUERY_LENGTH);
   const makers = loadMakers();
-  const fallbackMatches = localRank(makers, query);
   const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
   if (!query) {
     send(response, 200, {
       ok: true,
-      mode: "fallback",
-      model: null,
-      summary: "Showing current Artihubs prototype makers.",
-      matches: fallbackMatches
+      mode: "claude",
+      model: CLAUDE_SEARCH_MODEL,
+      summary: "Enter a natural-language request to test Claude Sonnet 4.6 maker search.",
+      matches: []
     });
     return;
   }
 
   if (!apiKey) {
-    send(response, 200, {
-      ok: true,
-      mode: "fallback",
-      model: null,
-      summary: query
-        ? "Local ranking is active. Add ANTHROPIC_API_KEY in Vercel to enable Claude Sonnet 4.6 search."
-        : "Showing current Artihubs prototype makers.",
-      matches: fallbackMatches
+    send(response, 503, {
+      ok: false,
+      mode: "claude",
+      model: CLAUDE_SEARCH_MODEL,
+      error: "Claude Sonnet 4.6 search is not configured. Add ANTHROPIC_API_KEY in Vercel."
     });
     return;
   }
 
   try {
-    const ranked = await claudeRank({ apiKey, query, makers, fallbackMatches });
+    const ranked = await claudeRank({ apiKey, query, makers });
     send(response, 200, { ok: true, ...ranked });
   } catch (error) {
-    send(response, 200, {
-      ok: true,
-      mode: "fallback",
+    send(response, 502, {
+      ok: false,
+      mode: "claude",
       model: CLAUDE_SEARCH_MODEL,
-      summary: "Claude search is temporarily unavailable, so Artihubs used local ranking for this request.",
-      matches: fallbackMatches
+      error: "Claude Sonnet 4.6 search failed. No local fallback was used."
     });
   }
 };

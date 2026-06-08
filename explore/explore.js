@@ -1,4 +1,3 @@
-let makers = [];
 let currentMatches = [];
 let currentView = "cards";
 
@@ -15,17 +14,6 @@ const tabButtons = document.querySelectorAll("[data-tab-target]");
 const viewButtons = document.querySelectorAll("[data-view]");
 const suggestionButtons = document.querySelectorAll(".query-suggestions button");
 
-function normalize(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function tokenize(query) {
-  return [...new Set(normalize(query).split(/[^a-z0-9]+/).filter((token) => token.length > 1))];
-}
-
 function markerFor(maker) {
   return maker.name
     .split(/\s+/)
@@ -35,53 +23,9 @@ function markerFor(maker) {
     .toUpperCase();
 }
 
-function makerText(maker) {
-  return normalize([
-    maker.name,
-    maker.country,
-    maker.region,
-    maker.field,
-    maker.capability,
-    maker.summary,
-    ...(maker.tags || [])
-  ].join(" "));
-}
-
-function localRank(query) {
-  const tokens = tokenize(query);
-  const hasQuery = tokens.length > 0;
-
-  return makers
-    .map((maker) => {
-      const text = makerText(maker);
-      let score = hasQuery ? 0 : 0.35;
-
-      tokens.forEach((token) => {
-        if (normalize(maker.name).includes(token)) score += 4;
-        if (normalize(maker.capability).includes(token)) score += 3.2;
-        if (normalize(maker.field).includes(token)) score += 2.8;
-        if (normalize((maker.tags || []).join(" ")).includes(token)) score += 2.2;
-        if (normalize(`${maker.country} ${maker.region}`).includes(token)) score += 1.6;
-        if (text.includes(token)) score += 1;
-      });
-
-      return {
-        ...maker,
-        rankSource: "fallback",
-        relevance: Math.min(0.99, score / Math.max(4, tokens.length * 2.8)),
-        reason: hasQuery
-          ? `Matched locally against capability, region, tags, and profile text for "${query}".`
-          : "Shown as a current Artihubs prototype profile."
-      };
-    })
-    .filter((maker) => !hasQuery || maker.relevance > 0)
-    .sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name))
-    .slice(0, 8);
-}
-
 function renderMatchCard(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}% match` : "Prototype profile";
-  const sourceLabel = maker.rankSource === "claude" ? "AI ranked" : "Prototype rank";
+  const sourceLabel = "Claude ranked";
   return `
     <article class="maker-card">
       <header>
@@ -105,7 +49,7 @@ function renderMatchCard(maker) {
 
 function renderMatchRow(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : "profile";
-  const sourceLabel = maker.rankSource === "claude" ? "AI ranked" : "Prototype rank";
+  const sourceLabel = "Claude ranked";
   return `
     <article class="maker-row">
       <div class="avatar-mark">${markerFor(maker)}</div>
@@ -130,7 +74,7 @@ function renderMatches(matches, summary = "Ask in natural language, or browse th
 }
 
 async function searchMakers(query) {
-  if (searchStatus) searchStatus.textContent = query ? "Searching Artihubs..." : "";
+  if (searchStatus) searchStatus.textContent = query ? "Searching with Claude Sonnet 4.6..." : "";
 
   try {
     const response = await fetch("../api/search/", {
@@ -139,19 +83,19 @@ async function searchMakers(query) {
       body: JSON.stringify({ query })
     });
 
-    if (!response.ok) throw new Error("Search API unavailable.");
-
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.error || "Claude Sonnet 4.6 search is unavailable.");
+    }
     renderMatches(data.matches || [], data.summary);
     if (searchStatus) {
-      searchStatus.textContent =
-        data.mode === "claude"
-          ? "Claude Sonnet 4.6 ranked these makers for your request."
-          : "Local prototype ranking is active until Claude API access is configured in production.";
+      searchStatus.textContent = query
+        ? "Claude Sonnet 4.6 ranked these makers for your request."
+        : "Claude-only dry test mode is ready.";
     }
   } catch (error) {
-    renderMatches(localRank(query), "Local prototype ranking is active while the AI search endpoint is unavailable.");
-    if (searchStatus) searchStatus.textContent = "Local prototype ranking is active.";
+    renderMatches([], error.message);
+    if (searchStatus) searchStatus.textContent = "Claude-only search failed. No local fallback was used.";
   }
 }
 
@@ -180,8 +124,6 @@ function applyUrlContext() {
 }
 
 async function init() {
-  const makerResponse = await fetch("../data/makers.json");
-  makers = await makerResponse.json();
   applyUrlContext();
   await searchMakers(searchInput.value.trim());
   if (window.location.hash === "#ask") switchTab("ask-panel");
