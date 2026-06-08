@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | For Seekers</title>
+    <meta name="description" content="Use Artihubs to find makers, prototypes, small production capability, parts, software, and expert teams." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav">
+        <a class="brand" href="../">Artihubs</a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">For Artihubs Seekers</p>
+          <h1>Search by need, not by luck.</h1>
+          <p class="lede">When you need a part, prototype, tool, repair kit, software workflow, or manufacturing capability, Artihubs helps you turn a vague search into a structured request.</p>
+          <div class="actions">
+            <a class="button primary" href="#seeker-request">Start a request</a>
+            <a class="button secondary" href="../explore/">Browse maker hubs</a>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="Seeker request scenario">
+          <p class="eyebrow">Example request</p>
+          <h3>Custom waterproof sensor housing</h3>
+          <p>Need: short-run prototype housing for marine sensors, basic sealing tests, sample shipping, and optional CAD refinement.</p>
+          <div class="tag-row">
+            <span class="tag">hardware</span>
+            <span class="tag">prototype</span>
+            <span class="tag">sample request</span>
+            <span class="tag">country flexible</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>From search to first deal.</h2>
+          <p>The Seeker flow should reduce the anxiety of contacting an independent maker. The platform gathers context before either side starts negotiating.</p>
+        </div>
+        <div class="grid">
+          <article class="step">
+            <h3>1. Describe the need</h3>
+            <p>State what you are trying to build, what function matters, what sample or proof you need, and what constraints exist.</p>
+          </article>
+          <article class="step">
+            <h3>2. Review candidates</h3>
+            <p>Use fields, regions, maker capabilities, and sample availability to narrow down a useful shortlist.</p>
+          </article>
+          <article class="step">
+            <h3>3. Request an intro</h3>
+            <p>Send a structured inquiry instead of an awkward cold DM. Later versions can add sample agreements, payment, and logistics support.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section two-grid" id="seeker-request">
+        <div>
+          <p class="eyebrow">Early seeker request</p>
+          <h2>Tell us what you are trying to find.</h2>
+          <p class="lede">This page prepares the future request pipeline. The initial version is intentionally structured but lightweight.</p>
+        </div>
+        <form class="form-panel" data-intake-form data-intake-type="seeker">
+          <div class="form-grid">
+            <div class="field">
+              <label for="seeker-name">Name or company</label>
+              <input id="seeker-name" name="name" autocomplete="organization" required />
+            </div>
+            <div class="field">
+              <label for="seeker-email">Email</label>
+              <input id="seeker-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="seeker-country">Your country</label>
+              <input id="seeker-country" name="country" autocomplete="country-name" />
+            </div>
+            <div class="field">
+              <label for="seeker-field">Needed field</label>
+              <select id="seeker-field" name="field">
+                <option value="hardware prototype">Hardware prototype</option>
+                <option value="software tool">Software tool</option>
+                <option value="repair kit">Repair kit</option>
+                <option value="small-batch manufacturing">Small-batch manufacturing</option>
+                <option value="research partner">Research partner</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="seeker-message">What do you need?</label>
+              <textarea id="seeker-message" name="message" required></textarea>
+            </div>
+          </div>
+          <button class="button primary" type="submit">Submit seeker request</button>
+          <p class="form-status" data-form-status></p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>Future Seeker workflows should include sample handoff records, purchase terms, and region-safe communication.</p>
+        <a href="../living-globe-v2/">Return to the globe</a>
+      </footer>
+    </main>
+    <script src="../site.js"></script>
+  </body>
+</html>

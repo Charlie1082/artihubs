@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | For Makers</title>
+    <meta name="description" content="Register as an Artihubs Maker and become discoverable by capability, region, and intent." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav">
+        <a class="brand" href="../">Artihubs</a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">For Artihubs Makers</p>
+          <h1>Be found for what you can make.</h1>
+          <p class="lede">Artihubs is for builders who should not have to become full-time content marketers just to reach the people who need their work.</p>
+          <div class="actions">
+            <a class="button primary" href="#maker-apply">Request early maker access</a>
+            <a class="button secondary" href="../living-globe-v2/">See the living globe</a>
+          </div>
+        </div>
+        <aside class="profile-preview" aria-label="Maker profile preview">
+          <div class="profile-meta">
+            <div>
+              <p class="eyebrow">Profile preview</p>
+              <h3>Quiet Forge Lab</h3>
+              <p>Seoul, Korea · compact robotics parts</p>
+            </div>
+            <div class="avatar-mark">QF</div>
+          </div>
+          <div class="capability-list">
+            <div><strong>Can make</strong><span>sensor housings, small fixtures</span></div>
+            <div><strong>Accepts</strong><span>prototype samples, custom batches</span></div>
+            <div><strong>Visible location</strong><span>country and region only</span></div>
+          </div>
+          <div class="tag-row">
+            <span class="tag">robotics</span>
+            <span class="tag">small-batch</span>
+            <span class="tag">hardware prototype</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Why register?</h2>
+          <p>The first Artihubs promise is simple: make your work searchable by need, capability, and region, without forcing you into a social media performance loop.</p>
+        </div>
+        <div class="grid">
+          <article class="step">
+            <h3>Show capability</h3>
+            <p>List what you already make and what you can build on request, including materials, tools, lead time, and collaboration boundaries.</p>
+          </article>
+          <article class="step">
+            <h3>Light your region</h3>
+            <p>Your country and region become visible on the Artihubs map as a small maker signal, while exact addresses stay private.</p>
+          </article>
+          <article class="step">
+            <h3>Receive structured requests</h3>
+            <p>Instead of vague DMs, seekers send requests with context, intended use, sample needs, timeline, and budget range.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section two-grid" id="maker-apply">
+        <div>
+          <p class="eyebrow">Early maker access</p>
+          <h2>Tell us what you make.</h2>
+          <p class="lede">This prototype form is wired for the future intake database. On local preview it stores only a browser-side test entry.</p>
+        </div>
+        <form class="form-panel" data-intake-form data-intake-type="maker">
+          <div class="form-grid">
+            <div class="field">
+              <label for="maker-name">Name or brand</label>
+              <input id="maker-name" name="name" autocomplete="organization" required />
+            </div>
+            <div class="field">
+              <label for="maker-email">Email</label>
+              <input id="maker-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="maker-country">Country</label>
+              <input id="maker-country" name="country" autocomplete="country-name" required />
+            </div>
+            <div class="field">
+              <label for="maker-region">Region</label>
+              <input id="maker-region" name="region" autocomplete="address-level1" required />
+            </div>
+            <div class="field full">
+              <label for="maker-field">Main capability</label>
+              <input id="maker-field" name="field" placeholder="compact robotics parts, repair kits, AI workflow tools" required />
+            </div>
+            <div class="field full">
+              <label for="maker-message">What should seekers know?</label>
+              <textarea id="maker-message" name="message" required></textarea>
+            </div>
+          </div>
+          <button class="button primary" type="submit">Submit maker interest</button>
+          <p class="form-status" data-form-status></p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>Artihubs Maker profiles show country and region only until both sides choose to exchange more details.</p>
+        <a href="../explore/">Explore current hubs</a>
+      </footer>
+    </main>
+    <script src="../site.js"></script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Explore Hubs</title>
+    <meta name="description" content="Browse early Artihubs Maker profiles by field, country, and region." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <nav class="nav">
+        <a class="brand" href="../">Artihubs</a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        </div>
+      </nav>
+
+      <section class="hero single">
+        <p class="eyebrow">Directory / Explore Hubs</p>
+        <h1>Browse makers by capability and region.</h1>
+        <p class="lede">This directory is the bridge between the living globe and the future marketplace. It keeps exact addresses private while making maker capability easy to scan.</p>
+        <div class="filters" aria-label="Maker filters">
+          <input id="search-filter" type="search" placeholder="Search capability, maker, tag" />
+          <select id="field-filter">
+            <option value="">All fields</option>
+          </select>
+          <select id="country-filter">
+            <option value="">All countries</option>
+          </select>
+          <select id="region-filter">
+            <option value="">All regions</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <h2>Current prototype makers.</h2>
+          <p>These entries are sample profiles used to test the browsing model. The production version should replace them with verified profiles and approval status.</p>
+        </div>
+        <div class="empty-state" id="empty-state">No makers match this filter yet. Try another field or region.</div>
+        <div class="directory-grid" id="maker-grid"></div>
+      </section>
+
+      <section class="section two-grid">
+        <div>
+          <p class="eyebrow">Request an intro</p>
+          <h2>Ask Artihubs to help start the conversation.</h2>
+          <p class="lede">The first version should route requests through Artihubs so makers receive context-rich inquiries instead of low-signal cold messages.</p>
+        </div>
+        <form class="form-panel" data-intake-form data-intake-type="intro">
+          <div class="form-grid">
+            <div class="field">
+              <label for="intro-name">Name or company</label>
+              <input id="intro-name" name="name" autocomplete="organization" required />
+            </div>
+            <div class="field">
+              <label for="intro-email">Email</label>
+              <input id="intro-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field full">
+              <label for="intro-field">Maker or capability of interest</label>
+              <input id="intro-field" name="field" placeholder="Quiet Forge Lab, repair kits, small CNC fixtures" required />
+            </div>
+            <div class="field full">
+              <label for="intro-message">Request context</label>
+              <textarea id="intro-message" name="message" required></textarea>
+            </div>
+          </div>
+          <button class="button primary" type="submit">Request intro</button>
+          <p class="form-status" data-form-status></p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>Directory filters can be prefilled from the globe using country, region, and field URL parameters.</p>
+        <a href="../living-globe-v2/">Open living globe</a>
+      </footer>
+    </main>
+    <script src="../site.js"></script>
+    <script src="./explore.js"></script>
+  </body>
+</html>

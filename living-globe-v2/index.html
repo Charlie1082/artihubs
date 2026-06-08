@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Living Globe Directory</title>
+    <meta name="description" content="A cinematic Artihubs mockup combining a living globe with a maker directory." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="nav">
+        <a class="brand" href="../">Artihubs</a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        </div>
+      </nav>
+      <section class="hero">
+        <div class="copy">
+          <p class="eyebrow">Living Globe</p>
+          <h1>Regions brighten when Artihubs Makers appear.</h1>
+          <p>Rotate the globe, inspect lit regions, and move from a place signal into a directory of makers and capabilities.</p>
+          <dl class="metrics">
+            <div><dt id="metric-makers">0</dt><dd>Artihubs Makers</dd></div>
+            <div><dt id="metric-regions">0</dt><dd>Lit Regions</dd></div>
+            <div><dt id="metric-fields">0</dt><dd>Fields</dd></div>
+          </dl>
+        </div>
+        <div class="globe-wrap" aria-label="Interactive Artihubs globe mockup">
+          <div class="globe-stage" id="globe-stage">
+            <svg class="globe-svg" id="globe-svg" viewBox="0 0 760 760" role="img" aria-labelledby="globe-title globe-desc">
+              <title id="globe-title">Artihubs living globe</title>
+              <desc id="globe-desc">A rotating world map where registered maker regions glow and can be selected.</desc>
+              <defs>
+                <radialGradient id="ocean-gradient" cx="34%" cy="28%" r="74%">
+                  <stop offset="0%" stop-color="#1f3152" />
+                  <stop offset="46%" stop-color="#081322" />
+                  <stop offset="100%" stop-color="#02050c" />
+                </radialGradient>
+                <radialGradient id="shade-gradient" cx="36%" cy="28%" r="78%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0.14)" />
+                  <stop offset="42%" stop-color="rgba(255,255,255,0.02)" />
+                  <stop offset="76%" stop-color="rgba(0,0,0,0.42)" />
+                  <stop offset="100%" stop-color="rgba(0,0,0,0.78)" />
+                </radialGradient>
+                <filter id="region-glow" x="-45%" y="-45%" width="190%" height="190%">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+                  <feGaussianBlur stdDeviation="9" />
+                </filter>
+                <clipPath id="sphere-clip">
+                  <circle cx="380" cy="380" r="342" />
+                </clipPath>
+              </defs>
+              <circle class="ocean" cx="380" cy="380" r="342" />
+              <g class="map-layer" clip-path="url(#sphere-clip)">
+                <path class="graticule" id="graticule"></path>
+                <g id="country-layer"></g>
+                <g id="admin-layer"></g>
+                <g id="region-layer"></g>
+              </g>
+              <circle class="shade" cx="380" cy="380" r="342" />
+              <circle class="rim" cx="380" cy="380" r="342" />
+            </svg>
+            <div class="marker-layer" id="marker-layer" aria-label="Registered Artihubs regions"></div>
+            <div class="globe-controls" aria-label="Globe controls">
+              <button class="globe-control zoom-control" id="zoom-in" type="button" aria-label="Zoom in">+</button>
+              <button class="globe-control zoom-control" id="zoom-out" type="button" aria-label="Zoom out">−</button>
+              <button class="globe-control map-back" id="return-globe" type="button" aria-label="Return to globe">↺</button>
+            </div>
+            <div class="globe-hint" id="globe-hint" aria-live="polite">100%</div>
+          </div>
+        </div>
+        <aside class="directory" id="directory">
+          <p class="eyebrow">Selected region</p>
+          <h2 id="region-title">Korea / Seoul</h2>
+          <p class="region-note" id="region-note">Regional light, no street-level location exposed.</p>
+          <div id="cards"></div>
+          <a class="directory-link" id="explore-region-link" href="../explore/?country=Korea&region=Seoul">Explore this hub</a>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="./script.js"></script>
+  </body>
+</html>

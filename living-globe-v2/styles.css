@@ -1,0 +1,525 @@
+:root {
+  color-scheme: dark;
+  --bg: #03060a;
+  --text: #f6f8fb;
+  --muted: #a7b2c4;
+  --line: rgba(255, 255, 255, 0.14);
+  --cyan: #4c9dff;
+  --violet: #a78bfa;
+  --amber: #ffd166;
+  --coral: #ff8a7a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 75% 35%, rgba(76, 157, 255, 0.13), transparent 34rem),
+    radial-gradient(circle at 58% 70%, rgba(167, 139, 250, 0.08), transparent 28rem),
+    var(--bg);
+  color: var(--text);
+}
+
+.shell {
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.nav {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 34px;
+}
+
+.brand {
+  font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.35fr) minmax(280px, 0.72fr);
+  gap: 28px;
+  align-items: center;
+  min-height: calc(100vh - 86px);
+  padding: 20px 34px 54px;
+}
+
+.copy h1 {
+  margin: 14px 0;
+  font-size: clamp(44px, 6vw, 86px);
+  line-height: 0.94;
+  letter-spacing: 0;
+}
+
+.copy p,
+.directory p,
+.directory dd {
+  color: var(--muted);
+}
+
+.eyebrow {
+  color: var(--cyan);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metrics {
+  display: flex;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.metrics div,
+.directory {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.055);
+  border-radius: 8px;
+}
+
+.metrics div {
+  min-width: 96px;
+  padding: 14px;
+}
+
+.metrics dt {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.metrics dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.globe-wrap {
+  display: grid;
+  place-items: center;
+  min-height: 620px;
+}
+
+.globe-stage {
+  position: relative;
+  width: min(64vw, 720px);
+  aspect-ratio: 1;
+  isolation: isolate;
+  touch-action: none;
+}
+
+.globe-stage::before,
+.globe-stage::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.globe-stage::before {
+  inset: 2%;
+  background:
+    radial-gradient(circle at 72% 44%, rgba(76, 157, 255, 0.16), transparent 16%),
+    radial-gradient(circle at 42% 64%, rgba(167, 139, 250, 0.13), transparent 22%);
+  filter: blur(22px);
+  opacity: 0.72;
+  z-index: 0;
+}
+
+.globe-stage::after {
+  inset: -2%;
+  border: 1px solid rgba(76, 157, 255, 0.16);
+  box-shadow: 0 0 80px rgba(76, 157, 255, 0.16), inset -34px -40px 84px rgba(0, 0, 0, 0.78);
+  z-index: 3;
+  transition: border-radius 320ms ease, inset 320ms ease, box-shadow 320ms ease;
+}
+
+.globe-stage.is-country-map::after {
+  inset: 5%;
+  border-radius: 18px;
+  box-shadow: 0 0 76px rgba(76, 157, 255, 0.12), inset 0 0 62px rgba(0, 0, 0, 0.46);
+}
+
+.globe-svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  user-select: none;
+}
+
+.map-layer,
+.marker-layer {
+  transition: opacity 220ms ease, filter 220ms ease;
+}
+
+.globe-stage.is-transitioning .map-layer,
+.globe-stage.is-transitioning .marker-layer {
+  opacity: 0.22;
+  filter: blur(7px);
+}
+
+.globe-svg:active {
+  cursor: grabbing;
+}
+
+.ocean {
+  fill: url(#ocean-gradient);
+}
+
+.graticule {
+  fill: none;
+  stroke: rgba(208, 238, 255, 0.09);
+  stroke-width: 0.8;
+}
+
+.country {
+  fill: rgba(37, 54, 78, 0.36);
+  stroke: rgba(157, 184, 224, 0.2);
+  stroke-width: 0.68;
+  vector-effect: non-scaling-stroke;
+  transition: fill 220ms ease, opacity 220ms ease, stroke 220ms ease;
+}
+
+.country.is-lit {
+  fill: color-mix(in srgb, var(--country-color) 42%, rgba(34, 54, 82, 0.38));
+  stroke: color-mix(in srgb, var(--country-color) 70%, rgba(255, 255, 255, 0.24));
+  stroke-width: 1.08;
+  filter: url(#region-glow);
+  cursor: pointer;
+}
+
+.country.is-focus-map {
+  fill: rgba(46, 72, 108, 0.5);
+  stroke: rgba(214, 230, 255, 0.44);
+  stroke-width: 1.35;
+  filter: drop-shadow(0 0 18px rgba(76, 157, 255, 0.16));
+}
+
+.country.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-region {
+  fill: rgba(61, 88, 126, 0.28);
+  stroke: rgba(213, 230, 255, 0.34);
+  stroke-width: 0.9;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-region.is-visible {
+  opacity: 1;
+}
+
+.globe-stage.is-country-map .admin-region.is-visible {
+  fill: rgba(70, 101, 143, 0.3);
+  stroke: rgba(219, 234, 255, 0.5);
+  stroke-width: 1.05;
+}
+
+.admin-region.is-lit {
+  fill: color-mix(in srgb, var(--admin-color) 48%, rgba(50, 74, 105, 0.36));
+  fill-opacity: 0.82;
+  stroke: color-mix(in srgb, var(--admin-color) 78%, rgba(255, 255, 255, 0.36));
+  filter:
+    drop-shadow(0 0 9px color-mix(in srgb, var(--admin-color) 42%, transparent))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--admin-color) 20%, transparent));
+}
+
+.globe-stage.is-country-map .admin-region.is-lit {
+  fill: color-mix(in srgb, var(--admin-color) 56%, rgba(58, 79, 112, 0.34));
+  stroke: color-mix(in srgb, var(--admin-color) 84%, rgba(255, 255, 255, 0.42));
+  stroke-width: 1.16;
+}
+
+.globe-stage.is-country-map.is-country-zoomed .admin-region.is-lit {
+  fill: color-mix(in srgb, var(--admin-color) 66%, rgba(66, 86, 118, 0.28));
+  fill-opacity: 0.92;
+  stroke: color-mix(in srgb, var(--admin-color) 90%, #ffffff);
+  stroke-width: 1.28;
+  filter:
+    drop-shadow(0 0 12px color-mix(in srgb, var(--admin-color) 54%, transparent))
+    drop-shadow(0 0 26px color-mix(in srgb, var(--admin-color) 26%, transparent));
+}
+
+.region-footprint {
+  fill: color-mix(in srgb, var(--region-color) 32%, transparent);
+  stroke: color-mix(in srgb, var(--region-color) 70%, rgba(255, 255, 255, 0.2));
+  stroke-width: 1;
+  filter: url(#region-glow);
+  opacity: 0.62;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  animation: footprint-breathe 3.8s ease-in-out infinite;
+}
+
+.globe-stage .region-footprint,
+.globe-stage:not(.is-country-map) .region-footprint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.region-footprint.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.region-footprint.is-selected {
+  fill: color-mix(in srgb, var(--region-color) 46%, transparent);
+  stroke: color-mix(in srgb, var(--region-color) 88%, #ffffff);
+  opacity: 0.9;
+}
+
+.shade {
+  fill: url(#shade-gradient);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.rim {
+  fill: none;
+  stroke: rgba(106, 173, 255, 0.22);
+  stroke-width: 1.2;
+  filter: url(#soft-glow);
+  pointer-events: none;
+}
+
+.marker-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  clip-path: circle(47.8% at 50% 50%);
+  pointer-events: none;
+}
+
+.globe-stage.is-country-map .marker-layer {
+  clip-path: inset(5% round 18px);
+}
+
+.marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid color-mix(in srgb, var(--marker-color) 82%, #ffffff);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--marker-color) 92%, #ffffff);
+  color: #061016;
+  font: inherit;
+  font-size: 0;
+  font-weight: 850;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  translate: -50% -50%;
+  cursor: pointer;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--marker-color) 82%, transparent);
+  pointer-events: auto;
+  transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  animation: marker-twinkle 2.6s ease-in-out infinite;
+}
+
+.marker::before,
+.marker::after {
+  display: none;
+}
+
+.marker:hover,
+.marker.is-selected {
+  transform: scale(1.35);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--marker-color) 88%, transparent);
+}
+
+.marker.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.globe-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 7%;
+  z-index: 5;
+  translate: -50% 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  color: rgba(246, 248, 251, 0.72);
+  font-size: 12px;
+  backdrop-filter: blur(14px);
+}
+
+.globe-controls {
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  z-index: 6;
+  display: grid;
+  gap: 8px;
+}
+
+.globe-control {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  background: rgba(7, 13, 24, 0.66);
+  color: rgba(246, 248, 251, 0.9);
+  font: inherit;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 24px rgba(76, 157, 255, 0.14);
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.globe-control:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(18, 30, 52, 0.76);
+  transform: translateY(-1px);
+}
+
+.map-back {
+  display: none;
+}
+
+.globe-stage.is-country-map .zoom-control {
+  display: none;
+}
+
+.globe-stage.is-country-map .map-back {
+  display: grid;
+}
+
+.globe-controls,
+.globe-controls .globe-control,
+.globe-hint {
+  display: none;
+}
+
+.map-error {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(280px, 70%);
+  margin: 0;
+  translate: -50% -50%;
+  color: rgba(246, 248, 251, 0.78);
+  text-align: center;
+  font-size: 14px;
+}
+
+.directory {
+  padding: 22px;
+}
+
+.card {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+}
+
+.card strong {
+  display: block;
+}
+
+.card span {
+  color: var(--muted);
+}
+
+.region-note {
+  margin: -2px 0 8px;
+  font-size: 13px;
+}
+
+.directory-link {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(76, 157, 255, 0.32);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(76, 157, 255, 0.1);
+  font-size: 13px;
+}
+
+@keyframes footprint-breathe {
+  0%, 100% {
+    opacity: 0.48;
+  }
+
+  50% {
+    opacity: 0.86;
+  }
+}
+
+@keyframes marker-twinkle {
+  0%, 100% {
+    transform: scale(0.72);
+    filter: brightness(1);
+  }
+
+  48% {
+    transform: scale(1.18);
+    filter: brightness(1.5);
+  }
+}
+
+@media (max-width: 980px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .nav,
+  .nav-links {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .globe-wrap {
+    min-height: auto;
+  }
+
+  .globe-stage {
+    width: min(86vw, 560px);
+  }
+
+  .marker {
+    width: 9px;
+    height: 9px;
+  }
+}
