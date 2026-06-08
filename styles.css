@@ -676,6 +676,7 @@ textarea {
   min-height: 680px;
   border: 0;
   background: transparent;
+  pointer-events: none;
 }
 
 .home-band,

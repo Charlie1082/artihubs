@@ -126,6 +126,8 @@ const returnGlobeButton = document.querySelector("#return-globe");
 const zoomStatus = document.querySelector("#globe-hint");
 const exploreRegionLink = document.querySelector("#explore-region-link");
 
+const searchParams = new URLSearchParams(window.location.search);
+const isLandingEmbed = searchParams.get("embed") === "landing";
 const size = 760;
 const sphereRadius = 342;
 const minZoom = 0.86;
@@ -574,6 +576,11 @@ function createMarker(region) {
   button.dataset.regionId = region.id;
   button.style.setProperty("--marker-color", region.color);
   button.setAttribute("aria-label", `${regionLabel(region)}: ${region.makers.length} registered makers`);
+  if (isLandingEmbed) {
+    button.tabIndex = -1;
+    markerLayer.append(button);
+    return button;
+  }
   button.addEventListener("pointerdown", (event) => {
     event.stopPropagation();
     pauseAutoRotation(5200);
@@ -651,12 +658,14 @@ function paintCountries(features) {
     countryPath.dataset.countryId = countryId;
     countryPath.classList.add("country");
     countryPath.setAttribute("aria-label", country.properties?.name || "Country");
-    countryPath.addEventListener("click", () => {
-      if (regionsByCountry.has(countryId)) enterCountryMap(countryId);
-    });
-    countryPath.addEventListener("mouseenter", () => {
-      if (viewMode === "globe" && regionsByCountry.has(countryId)) renderCountrySummary(countryId);
-    });
+    if (!isLandingEmbed) {
+      countryPath.addEventListener("click", () => {
+        if (regionsByCountry.has(countryId)) enterCountryMap(countryId);
+      });
+      countryPath.addEventListener("mouseenter", () => {
+        if (viewMode === "globe" && regionsByCountry.has(countryId)) renderCountrySummary(countryId);
+      });
+    }
     fragment.append(countryPath);
     countryPaths.push(countryPath);
   });
@@ -676,10 +685,12 @@ function paintAdminRegions(features) {
     adminPath.dataset.countryId = adminFeature.__countryId;
     adminPath.classList.add("admin-region");
     adminPath.setAttribute("aria-label", adminFeatureName(adminFeature) || "Region");
-    adminPath.addEventListener("click", () => {
-      const region = regions.find((item) => adminFeature.__regionIds?.includes(item.id));
-      if (region) renderRegion(region);
-    });
+    if (!isLandingEmbed) {
+      adminPath.addEventListener("click", () => {
+        const region = regions.find((item) => adminFeature.__regionIds?.includes(item.id));
+        if (region) renderRegion(region);
+      });
+    }
     adminPaths.push(adminPath);
     fragment.append(adminPath);
   });
@@ -697,14 +708,16 @@ function paintRegionFootprints() {
     footprintPath.dataset.regionId = region.id;
     footprintPath.style.setProperty("--region-color", region.color);
     footprintPath.setAttribute("aria-label", `${regionLabel(region)} lit region`);
-    footprintPath.addEventListener("mouseenter", () => {
-      pauseAutoRotation(5200);
-      renderRegion(region);
-    });
-    footprintPath.addEventListener("click", () => {
-      pauseAutoRotation(6200);
-      renderRegion(region);
-    });
+    if (!isLandingEmbed) {
+      footprintPath.addEventListener("mouseenter", () => {
+        pauseAutoRotation(5200);
+        renderRegion(region);
+      });
+      footprintPath.addEventListener("click", () => {
+        pauseAutoRotation(6200);
+        renderRegion(region);
+      });
+    }
     footprintPaths.push(footprintPath);
     fragment.append(footprintPath);
   });
@@ -838,18 +851,20 @@ async function init() {
   requestAnimationFrame(autoRotate);
 }
 
-stage.addEventListener("pointerdown", handlePointerDown);
-stage.addEventListener("pointermove", handlePointerMove);
-stage.addEventListener("pointerup", handlePointerUp);
-stage.addEventListener("pointercancel", handlePointerUp);
-stage.addEventListener("wheel", handleWheel, { passive: false });
-stage.addEventListener("click", handleMapAreaClick);
-document.addEventListener("pointerdown", handleDocumentPointerDown);
-zoomInButton.addEventListener("pointerdown", (event) => event.stopPropagation());
-zoomOutButton.addEventListener("pointerdown", (event) => event.stopPropagation());
-returnGlobeButton.addEventListener("pointerdown", (event) => event.stopPropagation());
-zoomInButton.addEventListener("click", (event) => handleZoomButton(event, 1.18));
-zoomOutButton.addEventListener("click", (event) => handleZoomButton(event, 1 / 1.18));
-returnGlobeButton.addEventListener("click", returnToGlobe);
+if (!isLandingEmbed) {
+  stage.addEventListener("pointerdown", handlePointerDown);
+  stage.addEventListener("pointermove", handlePointerMove);
+  stage.addEventListener("pointerup", handlePointerUp);
+  stage.addEventListener("pointercancel", handlePointerUp);
+  stage.addEventListener("wheel", handleWheel, { passive: false });
+  stage.addEventListener("click", handleMapAreaClick);
+  document.addEventListener("pointerdown", handleDocumentPointerDown);
+  zoomInButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+  zoomOutButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+  returnGlobeButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+  zoomInButton.addEventListener("click", (event) => handleZoomButton(event, 1.18));
+  zoomOutButton.addEventListener("click", (event) => handleZoomButton(event, 1 / 1.18));
+  returnGlobeButton.addEventListener("click", returnToGlobe);
+}
 
 init();
