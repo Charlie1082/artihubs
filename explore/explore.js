@@ -129,7 +129,7 @@ async function searchMakers(query) {
   if (searchStatus) searchStatus.textContent = query ? "Searching Artihubs..." : "";
 
   try {
-    const response = await fetch("../api/search", {
+    const response = await fetch("../api/search/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query })
