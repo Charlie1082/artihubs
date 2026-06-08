@@ -970,7 +970,7 @@ textarea {
 
 .home-section-head .eyebrow {
   grid-column: 1 / -1;
-  margin-bottom: -10px;
+  margin-bottom: 0;
 }
 
 .home-section-head h2,
@@ -1030,6 +1030,10 @@ textarea {
 .home-flow .home-section-head {
   display: block;
   max-width: 880px;
+}
+
+.home-flow .home-section-head .eyebrow {
+  margin-bottom: 18px;
 }
 
 .flow-rail {
