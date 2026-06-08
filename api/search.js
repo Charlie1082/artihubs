@@ -32,6 +32,14 @@ function normalize(value) {
     .toLowerCase();
 }
 
+function hasKorean(value) {
+  return /[\u3131-\u318e\uac00-\ud7a3]/.test(String(value || ""));
+}
+
+function cleanText(value, maxLength) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
 function relevanceScore(value, defaultScore = 0.82) {
   const score = Number(value);
   if (!Number.isFinite(score)) return defaultScore;
@@ -62,8 +70,10 @@ function mergeClaudeMatches(makers, claudeMatches) {
       ...maker,
       rankSource: "claude",
       relevance: relevanceScore(match.relevance),
-      reason: String(match.reason || "Claude matched this maker to the request.").slice(0, 260),
-      suggestedIntro: String(match.suggestedIntro || "").slice(0, 260)
+      reason: cleanText(match.reason || "Claude matched this maker to the request.", 320),
+      reasonKo: cleanText(match.reasonKo, 240),
+      suggestedIntro: cleanText(match.suggestedIntro, 260),
+      suggestedIntroKo: cleanText(match.suggestedIntroKo, 220)
     });
   });
 
@@ -73,6 +83,7 @@ function mergeClaudeMatches(makers, claudeMatches) {
 async function claudeRank({ apiKey, query, makers }) {
   const prompt = {
     query,
+    wantsKoreanCompanion: hasKorean(query),
     makers: makers.map((maker) => ({
       name: maker.name,
       country: maker.country,
@@ -93,15 +104,15 @@ async function claudeRank({ apiKey, query, makers }) {
     },
     body: JSON.stringify({
       model: CLAUDE_SEARCH_MODEL,
-      max_tokens: 900,
+      max_tokens: 1200,
       temperature: 0,
       system:
-        "You are Artihubs Engineering Search. Match a user's natural-language need to ONLY the provided maker profiles. Queries may be written in Korean, English, Japanese, or mixed language; interpret the intent semantically before ranking. Do not invent makers, capabilities, countries, or regions. If no provided maker is meaningfully relevant, return an empty matches array. Return strict JSON only.",
+        "You are Artihubs Engineering Search. Match a user's natural-language need to ONLY the provided maker profiles. English is the canonical product language: summary, reason, and suggestedIntro must always be written in polished, concise English, regardless of the query language. Queries may be written in Korean, English, Japanese, or mixed language; interpret the intent semantically before ranking. When wantsKoreanCompanion is true, also provide concise Korean companion fields that support the English output without replacing it. Do not invent makers, capabilities, countries, or regions. If no provided maker is meaningfully relevant, return an empty matches array. Return strict JSON only.",
       messages: [
         {
           role: "user",
           content:
-            "Rank Artihubs Makers for this query. Return JSON with this exact shape: {\"summary\":\"short search interpretation\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"why this maker matches\",\"suggestedIntro\":\"short intro request angle\"}]}. Use relevance from 0 to 1. Keep at most 8 matches. Keep only meaningfully relevant makers; do not pad the result list. Write the summary and reasons in the user's query language when clear.\n\n" +
+            "Rank Artihubs Makers for this query. Return JSON with this exact shape: {\"summary\":\"short English search interpretation\",\"summaryKo\":\"optional Korean companion summary, or empty string\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"English reason why this maker matches\",\"reasonKo\":\"optional Korean companion reason, or empty string\",\"suggestedIntro\":\"English intro request angle\",\"suggestedIntroKo\":\"optional Korean companion intro angle, or empty string\"}]}. Use relevance from 0 to 1. Keep at most 8 matches. Keep only meaningfully relevant makers; do not pad the result list. Prioritize high-quality English wording first. If wantsKoreanCompanion is false, use empty strings for Korean companion fields.\n\n" +
             JSON.stringify(prompt)
         }
       ]
@@ -119,7 +130,8 @@ async function claudeRank({ apiKey, query, makers }) {
   return {
     mode: "claude",
     model: CLAUDE_SEARCH_MODEL,
-    summary: String(parsed.summary || "Claude ranked makers for the request.").slice(0, 300),
+    summary: cleanText(parsed.summary || "Claude ranked makers for the request.", 340),
+    summaryKo: cleanText(parsed.summaryKo, 260),
     matches: mergeClaudeMatches(makers, parsed.matches)
   };
 }

@@ -647,6 +647,12 @@ textarea {
   margin-bottom: 0;
 }
 
+.summary-companion {
+  margin-top: 8px;
+  color: #aebbd0;
+  font-size: 14px;
+}
+
 .match-score {
   display: flex;
   justify-content: space-between;
@@ -678,6 +684,28 @@ textarea {
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 13px;
+}
+
+.match-reason span,
+.match-reason-ko span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cyan);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.match-reason-ko {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(156, 142, 255, 0.18);
+  border-radius: 8px;
+  color: #c7d0de;
+  background: rgba(156, 142, 255, 0.06);
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .directory-grid.is-list-view {

@@ -1,5 +1,7 @@
 let currentMatches = [];
 let currentView = "cards";
+let currentSummary = "Ask in natural language, or browse the current prototype maker set.";
+let currentSummaryKo = "";
 
 const form = document.querySelector("#ai-search-form");
 const searchInput = document.querySelector("#ai-search-input");
@@ -8,11 +10,21 @@ const grid = document.querySelector("#maker-grid");
 const emptyState = document.querySelector("#empty-state");
 const searchStatus = document.querySelector("#search-status");
 const searchSummary = document.querySelector("#search-summary");
+const searchSummaryKo = document.querySelector("#search-summary-ko");
 const searchHeading = document.querySelector("#search-heading");
 const introField = document.querySelector("#intro-field");
 const tabButtons = document.querySelectorAll("[data-tab-target]");
 const viewButtons = document.querySelectorAll("[data-view]");
 const suggestionButtons = document.querySelectorAll(".query-suggestions button");
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 function markerFor(maker) {
   return maker.name
@@ -26,23 +38,28 @@ function markerFor(maker) {
 function renderMatchCard(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}% match` : "Prototype profile";
   const sourceLabel = "Claude ranked";
+  const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
+  const koreanNote = maker.reasonKo
+    ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
+    : "";
   return `
     <article class="maker-card">
       <header>
         <div>
-          <p class="eyebrow">${maker.country} / ${maker.region}</p>
-          <h3>${maker.name}</h3>
+          <p class="eyebrow">${escapeHtml(maker.country)} / ${escapeHtml(maker.region)}</p>
+          <h3>${escapeHtml(maker.name)}</h3>
         </div>
-        <div class="avatar-mark">${markerFor(maker)}</div>
+        <div class="avatar-mark">${escapeHtml(markerFor(maker))}</div>
       </header>
       <p class="match-score"><span>${sourceLabel}</span><strong>${relevance}</strong></p>
-      <p><strong>${maker.capability}</strong></p>
-      <p>${maker.summary}</p>
-      <p class="match-reason">${maker.reason || relevance}</p>
+      <p><strong>${escapeHtml(maker.capability)}</strong></p>
+      <p>${escapeHtml(maker.summary)}</p>
+      <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || relevance)}</p>
+      ${koreanNote}
       <div class="tag-row">
-        ${(maker.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}
+        ${(maker.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
       </div>
-      <button class="button secondary" type="button" data-intro="${maker.name} - ${maker.capability}">Ask about this maker</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">Ask about this maker</button>
     </article>
   `;
 }
@@ -50,27 +67,38 @@ function renderMatchCard(maker) {
 function renderMatchRow(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : "profile";
   const sourceLabel = "Claude ranked";
+  const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
+  const koreanNote = maker.reasonKo
+    ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
+    : "";
   return `
     <article class="maker-row">
-      <div class="avatar-mark">${markerFor(maker)}</div>
+      <div class="avatar-mark">${escapeHtml(markerFor(maker))}</div>
       <div>
-        <p class="eyebrow">${maker.country} / ${maker.region} · ${sourceLabel} · ${relevance}</p>
-        <h3>${maker.name}</h3>
-        <p><strong>${maker.capability}</strong> · ${maker.summary}</p>
-        <p class="match-reason">${maker.reason || "Current Artihubs prototype profile."}</p>
+        <p class="eyebrow">${escapeHtml(maker.country)} / ${escapeHtml(maker.region)} · ${sourceLabel} · ${relevance}</p>
+        <h3>${escapeHtml(maker.name)}</h3>
+        <p><strong>${escapeHtml(maker.capability)}</strong> · ${escapeHtml(maker.summary)}</p>
+        <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || "Claude matched this maker to the request.")}</p>
+        ${koreanNote}
       </div>
-      <button class="button secondary" type="button" data-intro="${maker.name} - ${maker.capability}">Ask</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">Ask</button>
     </article>
   `;
 }
 
-function renderMatches(matches, summary = "Ask in natural language, or browse the current prototype maker set.") {
+function renderMatches(matches, summary = currentSummary, summaryKo = currentSummaryKo) {
   currentMatches = matches;
+  currentSummary = summary || "";
+  currentSummaryKo = summaryKo || "";
   grid.classList.toggle("is-list-view", currentView === "list");
   grid.innerHTML = matches.map((maker) => (currentView === "list" ? renderMatchRow(maker) : renderMatchCard(maker))).join("");
   emptyState.classList.toggle("is-visible", matches.length === 0);
   searchHeading.textContent = matches.length ? `${matches.length} Artihubs match${matches.length === 1 ? "" : "es"}` : "No matches yet";
-  searchSummary.textContent = summary;
+  searchSummary.textContent = currentSummary;
+  if (searchSummaryKo) {
+    searchSummaryKo.textContent = currentSummaryKo;
+    searchSummaryKo.hidden = !currentSummaryKo;
+  }
 }
 
 async function searchMakers(query) {
@@ -87,14 +115,14 @@ async function searchMakers(query) {
     if (!response.ok || data.ok === false) {
       throw new Error(data.error || "Claude Sonnet 4.6 search is unavailable.");
     }
-    renderMatches(data.matches || [], data.summary);
+    renderMatches(data.matches || [], data.summary, data.summaryKo);
     if (searchStatus) {
       searchStatus.textContent = query
         ? "Claude Sonnet 4.6 ranked these makers for your request."
         : "Claude-only dry test mode is ready.";
     }
   } catch (error) {
-    renderMatches([], error.message);
+    renderMatches([], error.message, "");
     if (searchStatus) searchStatus.textContent = "Claude-only search failed. No local fallback was used.";
   }
 }
@@ -154,7 +182,7 @@ viewButtons.forEach((button) => {
   button.addEventListener("click", () => {
     currentView = button.dataset.view;
     viewButtons.forEach((item) => item.classList.toggle("is-active", item === button));
-    renderMatches(currentMatches, searchSummary.textContent);
+    renderMatches(currentMatches, currentSummary, currentSummaryKo);
   });
 });
 
