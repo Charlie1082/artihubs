@@ -77,10 +77,20 @@ textarea {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: var(--text);
   font-size: 18px;
   font-weight: 850;
   letter-spacing: 0;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(76, 157, 255, 0.12);
 }
 
 .nav-links {
@@ -93,6 +103,13 @@ textarea {
 
 .nav-links a:hover {
   color: var(--text);
+}
+
+.language-link {
+  padding: 7px 10px;
+  border: 1px solid rgba(177, 207, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .hero,
@@ -132,6 +149,14 @@ h2,
 h3,
 p {
   letter-spacing: 0;
+}
+
+:lang(ko) h1,
+:lang(ko) h2,
+:lang(ko) h3,
+:lang(ko) p,
+:lang(ko) dd {
+  word-break: keep-all;
 }
 
 h1 {

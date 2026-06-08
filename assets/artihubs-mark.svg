@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Artihubs mark</title>
+  <desc id="desc">A compact Artihubs A mark for dark product interfaces.</desc>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#0b111c"/>
+  <rect x="4.5" y="4.5" width="55" height="55" rx="13.5" fill="none" stroke="#263852"/>
+  <path d="M32 10 51 52h-9l-3.4-8H25.4L22 52h-9L32 10Zm0 13-5.1 12.2h10.2L32 23Z" fill="#f7f6f0"/>
+  <rect x="24" y="38" width="16" height="3.2" rx="1.6" fill="#d6a84f"/>
+</svg>

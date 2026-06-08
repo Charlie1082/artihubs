@@ -40,7 +40,17 @@ body {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 800;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(76, 157, 255, 0.12);
 }
 
 .nav-links {
@@ -53,6 +63,13 @@ body {
 
 .nav-links a:hover {
   color: var(--text);
+}
+
+.language-link {
+  padding: 7px 10px;
+  border: 1px solid rgba(177, 207, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 a {
