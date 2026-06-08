@@ -647,6 +647,29 @@ textarea {
   margin-bottom: 0;
 }
 
+.match-score {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  min-height: 32px;
+  margin-top: 16px;
+  padding: 7px 9px;
+  border: 1px solid rgba(72, 229, 255, 0.22);
+  border-radius: 8px;
+  color: #dcefff;
+  background: rgba(72, 229, 255, 0.08);
+  font-size: 12px;
+}
+
+.match-score span {
+  color: var(--muted);
+}
+
+.match-score strong {
+  color: var(--cyan);
+}
+
 .maker-card .button {
   margin-top: auto;
 }

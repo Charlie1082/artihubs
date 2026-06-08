@@ -75,6 +75,7 @@ function localRank(makers, query) {
 
       return {
         ...maker,
+        rankSource: "fallback",
         relevance: Math.min(0.99, score / Math.max(4, tokens.length * 2.8)),
         reason: hasQuery
           ? `Matched against capability, region, tags, and profile text for "${query}".`
@@ -84,6 +85,12 @@ function localRank(makers, query) {
     .filter((maker) => !hasQuery || maker.relevance > 0)
     .sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name))
     .slice(0, 8);
+}
+
+function relevanceScore(value, fallback = 0.82) {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return fallback;
+  return Math.max(0, Math.min(1, score));
 }
 
 function extractJson(text) {
@@ -108,19 +115,18 @@ function mergeClaudeMatches(makers, claudeMatches, fallbackMatches) {
     used.add(maker.name);
     merged.push({
       ...maker,
-      relevance: Number(match.relevance) || 0.82,
+      rankSource: "claude",
+      relevance: relevanceScore(match.relevance),
       reason: String(match.reason || "Claude matched this maker to the request.").slice(0, 260),
       suggestedIntro: String(match.suggestedIntro || "").slice(0, 260)
     });
   });
 
-  fallbackMatches.forEach((maker) => {
-    if (used.has(maker.name)) return;
-    used.add(maker.name);
-    merged.push(maker);
-  });
+  if (merged.length > 0) {
+    return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, 8);
+  }
 
-  return merged.slice(0, 8);
+  return fallbackMatches;
 }
 
 async function claudeRank({ apiKey, query, makers, fallbackMatches }) {
@@ -195,6 +201,17 @@ module.exports = async function handler(request, response) {
   const makers = loadMakers();
   const fallbackMatches = localRank(makers, query);
   const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
+
+  if (!query) {
+    send(response, 200, {
+      ok: true,
+      mode: "fallback",
+      model: null,
+      summary: "Showing current Artihubs prototype makers.",
+      matches: fallbackMatches
+    });
+    return;
+  }
 
   if (!apiKey) {
     send(response, 200, {

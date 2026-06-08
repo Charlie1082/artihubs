@@ -67,6 +67,7 @@ function localRank(query) {
 
       return {
         ...maker,
+        rankSource: "fallback",
         relevance: Math.min(0.99, score / Math.max(4, tokens.length * 2.8)),
         reason: hasQuery
           ? `Matched locally against capability, region, tags, and profile text for "${query}".`
@@ -80,6 +81,7 @@ function localRank(query) {
 
 function renderMatchCard(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}% match` : "Prototype profile";
+  const sourceLabel = maker.rankSource === "claude" ? "AI ranked" : "Prototype rank";
   return `
     <article class="maker-card">
       <header>
@@ -89,6 +91,7 @@ function renderMatchCard(maker) {
         </div>
         <div class="avatar-mark">${markerFor(maker)}</div>
       </header>
+      <p class="match-score"><span>${sourceLabel}</span><strong>${relevance}</strong></p>
       <p><strong>${maker.capability}</strong></p>
       <p>${maker.summary}</p>
       <p class="match-reason">${maker.reason || relevance}</p>
@@ -102,11 +105,12 @@ function renderMatchCard(maker) {
 
 function renderMatchRow(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : "profile";
+  const sourceLabel = maker.rankSource === "claude" ? "AI ranked" : "Prototype rank";
   return `
     <article class="maker-row">
       <div class="avatar-mark">${markerFor(maker)}</div>
       <div>
-        <p class="eyebrow">${maker.country} / ${maker.region} · ${relevance}</p>
+        <p class="eyebrow">${maker.country} / ${maker.region} · ${sourceLabel} · ${relevance}</p>
         <h3>${maker.name}</h3>
         <p><strong>${maker.capability}</strong> · ${maker.summary}</p>
         <p class="match-reason">${maker.reason || "Current Artihubs prototype profile."}</p>
