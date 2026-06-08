@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Artihubs | Explore Hubs</title>
-    <meta name="description" content="Browse early Artihubs Maker profiles by field, country, and region." />
+    <meta name="description" content="Ask Artihubs in natural language to find makers by capability, region, and intent." />
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
@@ -18,70 +18,92 @@
           <a href="../living-globe-v2/">Living Globe</a>
           <a href="../for-makers/">For Makers</a>
           <a href="../for-seekers/">For Seekers</a>
+          <a class="is-active" href="./" aria-current="page">Explore Hubs</a>
           <a class="language-link" href="../ko/" lang="ko">한국어</a>
-          <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
         </div>
       </nav>
 
-      <section class="hero single">
-        <p class="eyebrow">Directory / Explore Hubs</p>
-        <h1>Browse makers by capability and region.</h1>
-        <p class="lede">This directory is the bridge between the living globe and the future marketplace. It keeps exact addresses private while making maker capability easy to scan.</p>
-        <div class="filters" aria-label="Maker filters">
-          <input id="search-filter" type="search" placeholder="Search capability, maker, tag" />
-          <select id="field-filter">
-            <option value="">All fields</option>
-          </select>
-          <select id="country-filter">
-            <option value="">All countries</option>
-          </select>
-          <select id="region-filter">
-            <option value="">All regions</option>
-          </select>
-        </div>
+      <section class="hero single explore-hero">
+        <p class="eyebrow">AI maker discovery</p>
+        <h1>Describe what you need. Artihubs finds the closest makers.</h1>
+        <p class="lede">Skip category setup. Search with the kind of messy, specific request you would normally type into a message: part, material, prototype, software workflow, region, timeline, or constraint.</p>
       </section>
 
-      <section class="section">
-        <div class="section-head">
-          <h2>Current prototype makers.</h2>
-          <p>These entries are sample profiles used to test the browsing model. The production version should replace them with verified profiles and approval status.</p>
+      <section class="section explore-tabs-section">
+        <div class="tab-bar" role="tablist" aria-label="Explore Hubs tabs">
+          <button class="tab-button is-active" id="search-tab" type="button" role="tab" aria-selected="true" aria-controls="search-panel" data-tab-target="search-panel">Search</button>
+          <button class="tab-button" id="ask-tab" type="button" role="tab" aria-selected="false" aria-controls="ask-panel" data-tab-target="ask-panel">Ask</button>
         </div>
-        <div class="empty-state" id="empty-state">No makers match this filter yet. Try another field or region.</div>
-        <div class="directory-grid" id="maker-grid"></div>
-      </section>
 
-      <section class="section two-grid">
-        <div>
-          <p class="eyebrow">Request an intro</p>
-          <h2>Ask Artihubs to help start the conversation.</h2>
-          <p class="lede">The first version should route requests through Artihubs so makers receive context-rich inquiries instead of low-signal cold messages.</p>
-        </div>
-        <form class="form-panel" data-intake-form data-intake-type="intro">
-          <div class="form-grid">
-            <div class="field">
-              <label for="intro-name">Name or company</label>
-              <input id="intro-name" name="name" autocomplete="organization" required />
+        <div class="tab-panel is-active" id="search-panel" role="tabpanel" aria-labelledby="search-tab">
+          <form class="ai-search-panel" id="ai-search-form">
+            <label class="sr-only" for="ai-search-input">Natural language maker search</label>
+            <textarea id="ai-search-input" name="query" placeholder="Example: I need a small team that can make waterproof housings for marine sensors, ideally in Korea or nearby." rows="4"></textarea>
+            <div class="ai-search-actions">
+              <button class="button primary" type="submit">Search Artihubs</button>
+              <button class="button secondary" type="button" id="clear-search">Clear</button>
             </div>
-            <div class="field">
-              <label for="intro-email">Email</label>
-              <input id="intro-email" name="email" type="email" autocomplete="email" required />
+          </form>
+
+          <div class="query-suggestions" aria-label="Example searches">
+            <button type="button">compact robotics parts near Korea</button>
+            <button type="button">repairable consumer product kits in Japan or Germany</button>
+            <button type="button">small batch controller boards and firmware help</button>
+            <button type="button">field-ready agritech modules for outdoor tests</button>
+          </div>
+
+          <div class="search-meta">
+            <div>
+              <p class="eyebrow">Ranked matches</p>
+              <h2 id="search-heading">Current Artihubs makers</h2>
+              <p id="search-summary">Ask in natural language, or browse the current prototype maker set.</p>
             </div>
-            <div class="field full">
-              <label for="intro-field">Maker or capability of interest</label>
-              <input id="intro-field" name="field" placeholder="Quiet Forge Lab, repair kits, small CNC fixtures" required />
-            </div>
-            <div class="field full">
-              <label for="intro-message">Request context</label>
-              <textarea id="intro-message" name="message" required></textarea>
+            <div class="view-switch" aria-label="Result view">
+              <button class="icon-button is-active" type="button" data-view="cards" aria-label="Card view">Cards</button>
+              <button class="icon-button" type="button" data-view="list" aria-label="List view">List</button>
             </div>
           </div>
-          <button class="button primary" type="submit">Request intro</button>
-          <p class="form-status" data-form-status></p>
-        </form>
+
+          <p class="form-status" id="search-status" aria-live="polite"></p>
+          <div class="empty-state" id="empty-state">No makers match this request yet. Try describing the need in another way.</div>
+          <div class="directory-grid" id="maker-grid"></div>
+        </div>
+
+        <div class="tab-panel" id="ask-panel" role="tabpanel" aria-labelledby="ask-tab" hidden>
+          <section class="two-grid ask-grid">
+            <div>
+              <p class="eyebrow">Request an intro</p>
+              <h2>Ask Artihubs to help start the conversation.</h2>
+              <p class="lede">Use this when a maker looks close enough to contact, but the first message needs structure. Artihubs captures context before either side starts negotiating.</p>
+            </div>
+            <form class="form-panel" data-intake-form data-intake-type="intro">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="intro-name">Name or company</label>
+                  <input id="intro-name" name="name" autocomplete="organization" required />
+                </div>
+                <div class="field">
+                  <label for="intro-email">Email</label>
+                  <input id="intro-email" name="email" type="email" autocomplete="email" required />
+                </div>
+                <div class="field full">
+                  <label for="intro-field">Maker or capability of interest</label>
+                  <input id="intro-field" name="field" placeholder="Quiet Forge Lab, waterproof housings, repair kits" required />
+                </div>
+                <div class="field full">
+                  <label for="intro-message">Request context</label>
+                  <textarea id="intro-message" name="message" required></textarea>
+                </div>
+              </div>
+              <button class="button primary" type="submit">Request intro</button>
+              <p class="form-status" data-form-status></p>
+            </form>
+          </section>
+        </div>
       </section>
 
       <footer class="footer">
-        <p>Directory filters can be prefilled from the globe using country, region, and field URL parameters.</p>
+        <p>Explore uses approved public maker profiles only. Intake submissions are private until reviewed and published.</p>
         <a href="../living-globe-v2/">Open living globe</a>
       </footer>
     </main>

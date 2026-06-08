@@ -24,5 +24,6 @@ This folder is prepared for Vercel.
 
 - Static pages are plain HTML/CSS/JS.
 - `/api/intake.js` is a Vercel serverless function.
-- Supabase credentials must be set only in Vercel environment variables.
+- `/api/search.js` is a Vercel serverless function for Claude Sonnet 4.6 maker search.
+- Supabase and Claude credentials must be set only in Vercel environment variables.
 - See `DEPLOYMENT.md`.

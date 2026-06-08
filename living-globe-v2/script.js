@@ -140,7 +140,7 @@ const globeProjection = geoOrthographic()
   .translate([size / 2, size / 2])
   .scale(sphereRadius)
   .clipAngle(90)
-  .precision(0.5)
+  .precision(isLandingEmbed ? 0.85 : 0.65)
   .rotate([-124, -24, 0]);
 let projection = globeProjection;
 const path = geoPath(projection);
@@ -177,6 +177,7 @@ let viewMode = "globe";
 let pausedUntil = performance.now() + 900;
 let lastAutoFrame = performance.now();
 let suppressMapClickUntil = 0;
+let mapStyleDirty = true;
 
 function regionLabel(region) {
   return `${region.country} / ${region.regionName}`;
@@ -192,6 +193,10 @@ function pauseAutoRotation(duration = idleRotationDelay) {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function markMapStyleDirty() {
+  mapStyleDirty = true;
 }
 
 function setZoom(nextZoom, pauseDuration = 2400) {
@@ -466,12 +471,16 @@ function createFootprint(region) {
 function updateCountryPaths() {
   countryPaths.forEach((countryPath) => {
     const countryId = countryPath.dataset.countryId;
-    const isLit = regionsByCountry.has(countryId);
     const isSelectedCountry = viewMode === "country" && countryId === selectedCountryId;
-    countryPath.classList.toggle("is-lit", viewMode === "globe" && isLit);
-    countryPath.classList.toggle("is-focus-map", isSelectedCountry);
-    countryPath.classList.toggle("is-hidden", viewMode === "country" && !isSelectedCountry);
-    countryPath.style.setProperty("--country-color", getCountryColor(countryId));
+
+    if (mapStyleDirty) {
+      const isLit = regionsByCountry.has(countryId);
+      countryPath.classList.toggle("is-lit", viewMode === "globe" && isLit);
+      countryPath.classList.toggle("is-focus-map", isSelectedCountry);
+      countryPath.classList.toggle("is-hidden", viewMode === "country" && !isSelectedCountry);
+      countryPath.style.setProperty("--country-color", getCountryColor(countryId));
+    }
+
     const displayFeature = isSelectedCountry ? getProjectionFeature(countryId, countryPath.__feature) : countryPath.__feature;
     countryPath.setAttribute("d", path(displayFeature) || "");
   });
@@ -480,10 +489,14 @@ function updateCountryPaths() {
 function updateAdminPaths() {
   adminPaths.forEach((adminPath) => {
     const isVisible = viewMode === "country" && adminPath.dataset.countryId === selectedCountryId;
-    const isLit = isVisible && adminPath.__feature.__regionIds?.length;
-    adminPath.classList.toggle("is-visible", isVisible);
-    adminPath.classList.toggle("is-lit", !!isLit);
-    adminPath.style.setProperty("--admin-color", getAdminRegionColor(adminPath.__feature));
+
+    if (mapStyleDirty) {
+      const isLit = isVisible && adminPath.__feature.__regionIds?.length;
+      adminPath.classList.toggle("is-visible", isVisible);
+      adminPath.classList.toggle("is-lit", !!isLit);
+      adminPath.style.setProperty("--admin-color", getAdminRegionColor(adminPath.__feature));
+    }
+
     adminPath.setAttribute("d", isVisible ? path(adminPath.__feature) || "" : "");
   });
 }
@@ -516,8 +529,9 @@ function updateMap() {
   graticule.setAttribute("d", viewMode === "globe" ? path(geoGraticule10()) : "");
   updateCountryPaths();
   updateAdminPaths();
-  updateFootprints();
+  if (mapStyleDirty) updateFootprints();
   updateMarkers();
+  mapStyleDirty = false;
 }
 
 function runMapTransition(callback) {
@@ -547,6 +561,7 @@ async function enterCountryMap(countryId, region = getCountryRegions(countryId)[
     stage.classList.add("is-country-map");
     paintAdminRegions(countryAdminFeatures);
     setCountryProjection(createCountryProjection(countryId, countryFeature));
+    markMapStyleDirty();
     zoomStatus.textContent = getCountryRegions(countryId)[0]?.country || "Map";
     pauseAutoRotation(1000000);
     renderCountrySummary(countryId);
@@ -563,6 +578,7 @@ function returnToGlobe() {
     stage.dataset.countryZoom = "1.00";
     paintAdminRegions([]);
     setProjection(globeProjection);
+    markMapStyleDirty();
     zoomStatus.textContent = `${Math.round(zoomLevel * 100)}%`;
     pauseAutoRotation(700);
     renderRegion(selectedRegion);
@@ -671,6 +687,7 @@ function paintCountries(features) {
   });
 
   countryLayer.append(fragment);
+  markMapStyleDirty();
 }
 
 function paintAdminRegions(features) {
@@ -696,6 +713,7 @@ function paintAdminRegions(features) {
   });
 
   adminLayer.append(fragment);
+  markMapStyleDirty();
 }
 
 function paintRegionFootprints() {
@@ -817,7 +835,13 @@ function handleDocumentPointerDown(event) {
 }
 
 function autoRotate(now) {
-  const delta = now - lastAutoFrame;
+  if (document.hidden) {
+    lastAutoFrame = now;
+    requestAnimationFrame(autoRotate);
+    return;
+  }
+
+  const delta = Math.min(now - lastAutoFrame, 34);
   lastAutoFrame = now;
 
   if (viewMode === "globe" && !dragState && now > pausedUntil && countryFeatures.length) {

@@ -65,6 +65,24 @@ body {
   color: var(--text);
 }
 
+.nav-links a.is-active {
+  position: relative;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(76, 157, 255, 0.42);
+}
+
+.nav-links a.is-active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(76, 157, 255, 0.18), rgba(76, 157, 255, 0.94), rgba(167, 139, 250, 0.42));
+  box-shadow: 0 0 18px rgba(76, 157, 255, 0.5);
+}
+
 .language-link {
   padding: 7px 10px;
   border: 1px solid rgba(177, 207, 255, 0.16);

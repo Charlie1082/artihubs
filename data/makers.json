@@ -1,0 +1,101 @@
+[
+  {
+    "name": "Quiet Forge Lab",
+    "country": "Korea",
+    "region": "Seoul",
+    "field": "assistive hardware",
+    "capability": "compact robotics parts",
+    "tags": ["robotics", "small-batch", "sensor housings"],
+    "summary": "Builds compact parts and assistive hardware prototypes for small teams."
+  },
+  {
+    "name": "Hanbit Interface",
+    "country": "Korea",
+    "region": "Seoul",
+    "field": "assistive hardware",
+    "capability": "assistive hardware prototypes",
+    "tags": ["accessibility", "interfaces", "prototype"],
+    "summary": "Designs early assistive hardware interfaces with practical assembly constraints."
+  },
+  {
+    "name": "Harbor Microfactory",
+    "country": "Korea",
+    "region": "Busan",
+    "field": "marine sensors",
+    "capability": "waterproof sensor housings",
+    "tags": ["marine", "waterproof", "fixtures"],
+    "summary": "Makes small waterproof housings and test fixtures for marine sensor projects."
+  },
+  {
+    "name": "Patchworks Motion",
+    "country": "United States",
+    "region": "California",
+    "field": "controller boards",
+    "capability": "small-batch controller boards",
+    "tags": ["electronics", "motion", "firmware"],
+    "summary": "Builds controller board prototypes for motion systems and custom interfaces."
+  },
+  {
+    "name": "Signal Loom",
+    "country": "United States",
+    "region": "California",
+    "field": "controller boards",
+    "capability": "AI workflow tools",
+    "tags": ["software", "automation", "operators"],
+    "summary": "Creates lightweight AI workflow tools for solo operators and small studios."
+  },
+  {
+    "name": "Lone Star Fixtures",
+    "country": "United States",
+    "region": "Texas",
+    "field": "garage CNC",
+    "capability": "desktop CNC production jigs",
+    "tags": ["CNC", "jigs", "short-run"],
+    "summary": "Produces desktop CNC fixtures for repeatable short-run production."
+  },
+  {
+    "name": "Banyan MicroWorks",
+    "country": "India",
+    "region": "Karnataka",
+    "field": "sensor fixtures",
+    "capability": "sensor fixtures",
+    "tags": ["sensors", "industrial design", "fixtures"],
+    "summary": "Builds practical sensor fixtures and assembly aids for field prototypes."
+  },
+  {
+    "name": "Open Loom Studio",
+    "country": "India",
+    "region": "Karnataka",
+    "field": "sensor fixtures",
+    "capability": "industrial design mockups",
+    "tags": ["mockups", "prototype", "CAD"],
+    "summary": "Helps small teams move from rough physical idea to inspectable mockup."
+  },
+  {
+    "name": "Machi Repair Works",
+    "country": "Japan",
+    "region": "Osaka",
+    "field": "repair kits",
+    "capability": "compact repairable product kits",
+    "tags": ["repair", "kits", "consumer hardware"],
+    "summary": "Creates compact repair kits for small product teams and local operators."
+  },
+  {
+    "name": "Northline Repair",
+    "country": "Germany",
+    "region": "Berlin",
+    "field": "repairable products",
+    "capability": "repairable product kits",
+    "tags": ["repairability", "kits", "EU"],
+    "summary": "Focuses on repairable product concepts and kit-based service workflows."
+  },
+  {
+    "name": "Campo Modular",
+    "country": "Brazil",
+    "region": "Sao Paulo",
+    "field": "agritech",
+    "capability": "agritech field modules",
+    "tags": ["agritech", "field modules", "outdoor"],
+    "summary": "Builds field-ready modules for small agritech tests and local deployments."
+  }
+]

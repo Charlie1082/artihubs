@@ -8,6 +8,7 @@ Domain: `artihubs.com`
 - Vercel: static site and serverless intake API
 - Cloudflare: DNS for `artihubs.com`
 - Supabase: early intake database
+- Anthropic Claude: natural-language maker search
 
 ## Supabase Setup
 
@@ -27,8 +28,13 @@ Set these in Vercel Project Settings -> Environment Variables:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `ANTHROPIC_API_KEY`
 
 If the Supabase dashboard exposes a newer server-side secret key label instead of a legacy service role key, set `SUPABASE_SECRET_KEY`. The deployed API accepts either `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`.
+
+For natural-language Explore Hubs search, set the Claude key as `ANTHROPIC_API_KEY`. The deployed search API also accepts `CLAUDE_API_KEY`, but `ANTHROPIC_API_KEY` is preferred. The model is fixed in code to `claude-sonnet-4-6`.
+
+Model selection note: Claude Sonnet 4.6 is the current Artihubs replacement for prior Sonnet-class natural-language search, analysis, and ranking work.
 
 ## GitHub To Vercel
 
@@ -68,6 +74,8 @@ Then open:
 - `http://0.0.0.0:4173/explore/`
 
 Local form submissions fall back to browser localStorage. Production submissions should go to `/api/intake` and then Supabase.
+
+Natural-language Explore Hubs search calls `/api/search` in production. If the Claude environment variable is missing, it safely falls back to local prototype ranking.
 
 ## Next Security Step
 
