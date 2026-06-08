@@ -37,7 +37,7 @@ function markerFor(maker) {
 
 function renderMatchCard(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}% match` : "Prototype profile";
-  const sourceLabel = "Claude ranked";
+  const sourceLabel = "Matched by Artihubs";
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -66,7 +66,7 @@ function renderMatchCard(maker) {
 
 function renderMatchRow(maker) {
   const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : "profile";
-  const sourceLabel = "Claude ranked";
+  const sourceLabel = "Matched by Artihubs";
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -102,7 +102,7 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
 }
 
 async function searchMakers(query) {
-  if (searchStatus) searchStatus.textContent = query ? "Searching with Claude Sonnet 4.6..." : "";
+  if (searchStatus) searchStatus.textContent = query ? "Searching Artihubs..." : "";
 
   try {
     const response = await fetch("../api/search/", {
@@ -113,17 +113,17 @@ async function searchMakers(query) {
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false) {
-      throw new Error(data.error || "Claude Sonnet 4.6 search is unavailable.");
+      throw new Error(data.error || "Artihubs search is temporarily unavailable.");
     }
     renderMatches(data.matches || [], data.summary, data.summaryKo);
     if (searchStatus) {
       searchStatus.textContent = query
-        ? "Claude Sonnet 4.6 ranked these makers for your request."
-        : "Claude-only dry test mode is ready.";
+        ? "Matched by Artihubs."
+        : "Artihubs search is ready.";
     }
   } catch (error) {
     renderMatches([], error.message, "");
-    if (searchStatus) searchStatus.textContent = "Claude-only search failed. No local fallback was used.";
+    if (searchStatus) searchStatus.textContent = "Artihubs could not complete this search.";
   }
 }
 

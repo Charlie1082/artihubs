@@ -128,9 +128,7 @@ async function claudeRank({ apiKey, query, makers }) {
   const parsed = extractJson(text);
 
   return {
-    mode: "claude",
-    model: CLAUDE_SEARCH_MODEL,
-    summary: cleanText(parsed.summary || "Claude ranked makers for the request.", 340),
+    summary: cleanText(parsed.summary || "Artihubs matched makers for the request.", 340),
     summaryKo: cleanText(parsed.summaryKo, 260),
     matches: mergeClaudeMatches(makers, parsed.matches)
   };
@@ -157,9 +155,7 @@ module.exports = async function handler(request, response) {
   if (!query) {
     send(response, 200, {
       ok: true,
-      mode: "claude",
-      model: CLAUDE_SEARCH_MODEL,
-      summary: "Enter a natural-language request to test Claude Sonnet 4.6 maker search.",
+      summary: "Enter a natural-language request to search Artihubs.",
       matches: []
     });
     return;
@@ -168,9 +164,7 @@ module.exports = async function handler(request, response) {
   if (!apiKey) {
     send(response, 503, {
       ok: false,
-      mode: "claude",
-      model: CLAUDE_SEARCH_MODEL,
-      error: "Claude Sonnet 4.6 search is not configured. Add ANTHROPIC_API_KEY in Vercel."
+      error: "Artihubs search is not configured."
     });
     return;
   }
@@ -181,9 +175,7 @@ module.exports = async function handler(request, response) {
   } catch (error) {
     send(response, 502, {
       ok: false,
-      mode: "claude",
-      model: CLAUDE_SEARCH_MODEL,
-      error: "Claude Sonnet 4.6 search failed. No local fallback was used."
+      error: "Artihubs search is temporarily unavailable."
     });
   }
 };
