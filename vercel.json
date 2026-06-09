@@ -1,6 +1,24 @@
 {
   "cleanUrls": true,
   "trailingSlash": true,
+  "rewrites": [
+    {
+      "source": "/api/intake",
+      "destination": "/api/v1/intake"
+    },
+    {
+      "source": "/api/intake/",
+      "destination": "/api/v1/intake"
+    },
+    {
+      "source": "/api/search",
+      "destination": "/api/v1/search"
+    },
+    {
+      "source": "/api/search/",
+      "destination": "/api/v1/search"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

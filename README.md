@@ -37,7 +37,7 @@ This folder is prepared for Vercel.
 - `/api/v1/admin/roles.js` lists and updates admin roles only for server-validated `super_admin` users.
 - `/api/v1/admin/maintenance.js` calls approved maintenance RPC helpers only for server-validated `admin` or `super_admin` users.
 - `/api/v1/admin/privacy-redactions.js` calls approved privacy redaction RPC helpers only for server-validated `admin` or `super_admin` users.
-- `/api/intake.js` and `/api/search.js` remain compatibility handlers.
+- `/api/intake` and `/api/search` remain compatibility paths through Vercel rewrites to the v1 handlers.
 - Supabase and Claude credentials must be set only in Vercel environment variables.
 - Optional search query logging is disabled by default and stores only redacted previews plus HMAC hashes when enabled.
 - See `DEPLOYMENT.md`.

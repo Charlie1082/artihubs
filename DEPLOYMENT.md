@@ -218,6 +218,11 @@ Then open:
 
 Local form submissions fall back to browser localStorage only on localhost-style hosts. Production submissions do not store private intake data in localStorage.
 
+Compatibility paths:
+
+- `/api/intake` rewrites to `/api/v1/intake`.
+- `/api/search` rewrites to `/api/v1/search`.
+
 Natural-language Explore Hubs search calls `/api/v1/search` in production. If the Claude environment variable is missing, it safely falls back to local prototype ranking.
 
 After Vercel deploys, check:

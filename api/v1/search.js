@@ -1,1 +1,1 @@
-module.exports = require("../search.js");
+module.exports = require("../_utils/search-handler.js");

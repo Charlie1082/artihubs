@@ -1,9 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const { clientIp, handleCorsPreflight, isJsonRequest, originAllowed, publicError, readJson, requestId, safeFetch, setCorsHeaders, sendJson } = require("./_utils/http");
-const { enforceRateLimit } = require("./_utils/rate-limit");
-const { writeSearchQueryLog } = require("./_utils/search-log");
-const { hasSupabaseServerConfig, supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./_utils/supabase");
+const { clientIp, handleCorsPreflight, isJsonRequest, originAllowed, publicError, readJson, requestId, safeFetch, setCorsHeaders, sendJson } = require("./http");
+const { enforceRateLimit } = require("./rate-limit");
+const { writeSearchQueryLog } = require("./search-log");
+const { hasSupabaseServerConfig, supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./supabase");
 
 const CLAUDE_SEARCH_MODEL = "claude-sonnet-4-6";
 const MAX_QUERY_LENGTH = 700;
@@ -15,7 +15,7 @@ let cachedPublicProfilesAt = 0;
 
 function loadMakers() {
   if (cachedMakers) return cachedMakers;
-  const filePath = path.join(__dirname, "..", "data", "makers.json");
+  const filePath = path.join(__dirname, "..", "..", "data", "makers.json");
   cachedMakers = JSON.parse(fs.readFileSync(filePath, "utf8"));
   return cachedMakers;
 }

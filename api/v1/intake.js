@@ -1,1 +1,1 @@
-module.exports = require("../intake.js");
+module.exports = require("../_utils/intake-handler.js");

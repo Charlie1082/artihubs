@@ -19,10 +19,10 @@ const {
   safeFetch,
   setCorsHeaders,
   sendJson
-} = require("./_utils/http");
-const { intakeTableName } = require("./_utils/intake-table");
-const { enforceRateLimit } = require("./_utils/rate-limit");
-const { supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./_utils/supabase");
+} = require("./http");
+const { intakeTableName } = require("./intake-table");
+const { enforceRateLimit } = require("./rate-limit");
+const { supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./supabase");
 
 function isEmail(value) {
   return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
