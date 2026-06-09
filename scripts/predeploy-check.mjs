@@ -1,9 +1,11 @@
+import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const workspaceRoot = path.join(projectRoot, "..");
+const workspaceMigrationCheck = path.join(workspaceRoot, "docs/deployment/validate-migrations.mjs");
 
 const checks = [
   {
@@ -44,11 +46,26 @@ const checks = [
   {
     name: "migrations",
     cwd: workspaceRoot,
-    args: ["docs/deployment/validate-migrations.mjs"]
+    args: ["docs/deployment/validate-migrations.mjs"],
+    optionalWhenMissing: workspaceMigrationCheck
   }
 ];
 
 function runCheck(check) {
+  if (check.optionalWhenMissing && !fs.existsSync(check.optionalWhenMissing)) {
+    return {
+      name: check.name,
+      ok: true,
+      status: 0,
+      summary: {
+        ok: true,
+        skipped: true,
+        reason: "workspace_migration_validator_not_present_in_deployable_repo"
+      },
+      stderr: ""
+    };
+  }
+
   const result = spawnSync(process.execPath, check.args, {
     cwd: check.cwd,
     encoding: "utf8"
