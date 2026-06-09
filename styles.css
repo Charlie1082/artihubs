@@ -480,6 +480,327 @@ textarea {
   font-size: 13px;
 }
 
+button:disabled,
+.button[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.auth-page {
+  min-height: 100vh;
+}
+
+.auth-shell,
+.welcome-screen {
+  width: min(1120px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(360px, 0.72fr);
+  gap: clamp(18px, 4vw, 54px);
+  align-items: center;
+  min-height: calc(100vh - 88px);
+  padding: 58px 0;
+}
+
+.login-layout {
+  grid-template-columns: minmax(0, 0.84fr) minmax(360px, 0.66fr);
+}
+
+.auth-copy h1 {
+  max-width: 780px;
+  font-size: clamp(46px, 6.8vw, 84px);
+}
+
+.auth-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.auth-proof-grid div {
+  min-height: 118px;
+  padding: 16px;
+  border: 1px solid rgba(177, 207, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.044);
+}
+
+.auth-proof-grid strong,
+.auth-proof-grid span {
+  display: block;
+}
+
+.auth-proof-grid strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.auth-proof-grid span {
+  margin-top: 9px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.auth-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 18px;
+  left: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(72, 229, 255, 0), rgba(72, 229, 255, 0.78), rgba(255, 209, 102, 0.34), rgba(72, 229, 255, 0));
+}
+
+.role-intent {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.role-intent legend {
+  grid-column: 1 / -1;
+  color: #dce7f7;
+  font-size: 13px;
+}
+
+.role-intent label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(177, 207, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(5, 9, 15, 0.72);
+  cursor: pointer;
+}
+
+.role-intent input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.role-intent input:checked + span {
+  color: var(--cyan);
+}
+
+.role-intent label:has(input:checked) {
+  border-color: rgba(72, 229, 255, 0.36);
+  background: rgba(72, 229, 255, 0.09);
+}
+
+.privacy-note {
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px solid rgba(255, 209, 102, 0.18);
+  border-radius: 8px;
+  color: #d8d0ba;
+  background: rgba(255, 209, 102, 0.055);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.auth-secondary-link,
+.auth-link-row {
+  margin-top: 10px;
+}
+
+.auth-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.welcome-screen {
+  padding: 58px 0;
+}
+
+.welcome-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: start;
+}
+
+.welcome-head h1 {
+  font-size: clamp(46px, 7vw, 86px);
+}
+
+.status-banner {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 26px;
+  padding: 16px;
+  border: 1px solid rgba(72, 229, 255, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(72, 229, 255, 0.09), rgba(167, 139, 250, 0.06)),
+    rgba(5, 9, 15, 0.72);
+}
+
+.status-banner span {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 18px rgba(72, 229, 255, 0.68);
+}
+
+.welcome-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.welcome-card {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.052);
+}
+
+.welcome-card.is-active {
+  border-color: rgba(72, 229, 255, 0.34);
+  background:
+    linear-gradient(145deg, rgba(72, 229, 255, 0.09), rgba(255, 140, 207, 0.05)),
+    rgba(255, 255, 255, 0.052);
+}
+
+.welcome-card h2 {
+  font-size: clamp(28px, 4vw, 44px);
+}
+
+.task-list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task-list li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.task-list span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(72, 229, 255, 0.3);
+  border-radius: 8px;
+  color: var(--cyan);
+  background: rgba(72, 229, 255, 0.08);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.account-hero {
+  grid-template-columns: minmax(0, 0.96fr) minmax(320px, 0.82fr);
+  min-height: auto;
+  padding-bottom: 28px;
+}
+
+.account-status-panel,
+.account-dashboard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(72, 229, 255, 0.08), rgba(255, 209, 102, 0.035)),
+    rgba(10, 16, 26, 0.78);
+}
+
+.account-status-panel,
+.account-dashboard {
+  padding: 24px;
+}
+
+.account-status-panel h2,
+.account-dashboard h2 {
+  font-size: clamp(28px, 3.4vw, 42px);
+}
+
+.account-meta,
+.account-state-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.account-meta div,
+.account-state-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 48px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-meta span,
+.account-state-list span {
+  color: var(--muted);
+}
+
+.account-meta strong,
+.account-state-list strong {
+  color: var(--text);
+}
+
+.account-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(320px, 0.72fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.section-head.compact {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.auth-tabs {
+  margin-bottom: 16px;
+}
+
+.auth-form .button {
+  margin-top: 14px;
+}
+
+.turnstile-field {
+  margin-bottom: 1rem;
+}
+
 .filters {
   display: grid;
   grid-template-columns: 1.4fr repeat(3, minmax(150px, 0.7fr));
@@ -779,7 +1100,11 @@ textarea {
   .hero,
   .two-grid,
   .grid,
-  .directory-grid {
+  .directory-grid,
+  .account-grid,
+  .auth-shell,
+  .welcome-grid,
+  .auth-proof-grid {
     grid-template-columns: 1fr;
   }
 
@@ -811,7 +1136,10 @@ textarea {
   .nav,
   .nav-links,
   .section-head,
-  .footer {
+  .footer,
+  .welcome-head,
+  .account-meta div,
+  .account-state-list div {
     align-items: flex-start;
     flex-direction: column;
   }

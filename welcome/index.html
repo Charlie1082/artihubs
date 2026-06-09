@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Welcome</title>
+    <meta name="description" content="Open the first private Artihubs workspace tasks after signup or login." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page auth-page" data-welcome>
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="../login/">Sign in</a>
+          <a href="../signup/">Join</a>
+          <a class="language-link" href="../ko/" lang="ko">한국어</a>
+        </div>
+      </nav>
+
+      <section class="welcome-screen" aria-labelledby="welcome-title">
+        <div class="welcome-head">
+          <div>
+            <p class="eyebrow">Private workspace</p>
+            <h1 id="welcome-title">Welcome to Artihubs.</h1>
+            <p class="lede" data-welcome-name>Welcome to Artihubs</p>
+          </div>
+          <button class="button secondary" type="button" data-welcome-signout>Sign out</button>
+        </div>
+
+        <div class="status-banner">
+          <span></span>
+          <strong data-welcome-status>Your profile is private until reviewed and approved for publication.</strong>
+        </div>
+
+        <div class="welcome-grid">
+          <article class="welcome-card" data-task-panel="maker">
+            <p class="eyebrow">Maker tasks</p>
+            <h2>Build your private Maker draft.</h2>
+            <ol class="task-list">
+              <li><span>1</span><strong>Draft capability profile</strong></li>
+              <li><span>2</span><strong>Add country and region signal</strong></li>
+              <li><span>3</span><strong>Submit for review</strong></li>
+            </ol>
+            <a class="button primary" href="../for-makers/">Draft maker profile</a>
+          </article>
+
+          <article class="welcome-card" data-task-panel="seeker">
+            <p class="eyebrow">Seeker tasks</p>
+            <h2>Start with the capability you need.</h2>
+            <ol class="task-list">
+              <li><span>1</span><strong>Describe what you need</strong></li>
+              <li><span>2</span><strong>Review matches</strong></li>
+              <li><span>3</span><strong>Request an intro</strong></li>
+            </ol>
+            <a class="button primary" href="../explore/">Start a seeker request</a>
+          </article>
+        </div>
+      </section>
+    </main>
+    <script src="../auth-flow.js"></script>
+  </body>
+</html>

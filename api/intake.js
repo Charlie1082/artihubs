@@ -1,87 +1,207 @@
 const allowedTypes = new Set(["maker", "seeker", "intro", "general"]);
-
-function send(response, statusCode, payload) {
-  response.statusCode = statusCode;
-  response.setHeader("Content-Type", "application/json");
-  response.setHeader("X-Content-Type-Options", "nosniff");
-  response.end(JSON.stringify(payload));
-}
+const MAX_BODY_BYTES = 12_000;
+const MAX_FIELD_LENGTHS = {
+  name: 120,
+  country: 80,
+  region: 100,
+  field: 160,
+  message: 1200,
+  sourcePath: 160
+};
+const {
+  clientIp,
+  handleCorsPreflight,
+  isJsonRequest,
+  originAllowed,
+  publicError,
+  readJson,
+  requestId,
+  safeFetch,
+  setCorsHeaders,
+  sendJson
+} = require("./_utils/http");
+const { intakeTableName } = require("./_utils/intake-table");
+const { enforceRateLimit } = require("./_utils/rate-limit");
+const { supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./_utils/supabase");
 
 function isEmail(value) {
   return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-async function readJson(request) {
-  const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
-  const body = Buffer.concat(chunks).toString("utf8");
-  return body ? JSON.parse(body) : {};
+function cleanField(payload, key) {
+  return String(payload[key] || "").trim().slice(0, MAX_FIELD_LENGTHS[key]);
+}
+
+function sanitizeMetadata(metadata) {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return {};
+  const allowed = {};
+  ["userAgent", "submittedAt"].forEach((key) => {
+    if (typeof metadata[key] === "string") allowed[key] = metadata[key].slice(0, 240);
+  });
+  return allowed;
+}
+
+async function verifyTurnstile({ token, request }) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const required = process.env.TURNSTILE_REQUIRED === "true";
+  if (!secret) return !required;
+  if (!token) return !required;
+
+  const formData = new URLSearchParams();
+  formData.set("secret", secret);
+  formData.set("response", token);
+  formData.set("remoteip", clientIp(request));
+
+  const response = await safeFetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData.toString()
+  }, 5_000);
+  const data = await response.json().catch(() => ({}));
+  return Boolean(data.success);
 }
 
 module.exports = async function handler(request, response) {
+  const id = requestId();
+  if (handleCorsPreflight(request, response)) return;
+
   if (request.method !== "POST") {
-    send(response, 405, { error: "Method not allowed." });
+    sendJson(response, 405, { ok: false, error: publicError("METHOD_NOT_ALLOWED", "Method not allowed."), requestId: id });
+    return;
+  }
+
+  if (!originAllowed(request)) {
+    sendJson(response, 403, {
+      ok: false,
+      error: publicError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed."),
+      requestId: id
+    });
+    return;
+  }
+  setCorsHeaders(request, response);
+
+  if (!isJsonRequest(request)) {
+    sendJson(response, 415, {
+      ok: false,
+      error: publicError("UNSUPPORTED_MEDIA_TYPE", "Content-Type must be application/json."),
+      requestId: id
+    });
     return;
   }
 
   let payload;
   try {
-    payload = await readJson(request);
+    payload = await readJson(request, MAX_BODY_BYTES);
   } catch (error) {
-    send(response, 400, { error: "Invalid JSON body." });
+    const code = error.message === "body_too_large" ? "PAYLOAD_TOO_LARGE" : "INVALID_JSON";
+    const message = error.message === "body_too_large" ? "Request body is too large." : "Invalid JSON body.";
+    sendJson(response, 400, { ok: false, error: publicError(code, message), requestId: id });
     return;
   }
 
   const type = allowedTypes.has(payload.type) ? payload.type : "general";
   const email = String(payload.email || "").trim().toLowerCase();
+  const rateKey = `intake:${clientIp(request)}:${email || "no-email"}`;
+  const limited = await enforceRateLimit({ key: rateKey, limit: 8, windowMs: 10 * 60 * 1000 });
 
-  if (!isEmail(email)) {
-    send(response, 400, { error: "A valid email is required." });
+  if (!limited.allowed) {
+    sendJson(response, 429, {
+      ok: false,
+      error: publicError("RATE_LIMITED", "Too many requests. Please try again later."),
+      requestId: id
+    });
     return;
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+  if (!isEmail(email)) {
+    sendJson(response, 400, { ok: false, error: publicError("INVALID_EMAIL", "A valid email is required."), requestId: id });
+    return;
+  }
 
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    send(response, 503, { error: "Artihubs intake database is not configured yet." });
+  let turnstileOk = false;
+  try {
+    turnstileOk = await verifyTurnstile({ token: payload.turnstileToken, request });
+  } catch (error) {
+    turnstileOk = false;
+  }
+  if (!turnstileOk) {
+    sendJson(response, 403, {
+      ok: false,
+      error: publicError("BOT_CHECK_FAILED", "Bot verification failed."),
+      requestId: id
+    });
+    return;
+  }
+
+  const databaseUrl = supabaseUrl();
+  const supabaseServiceRoleKey = supabaseServerKey();
+  let tableName;
+
+  try {
+    tableName = intakeTableName();
+  } catch (error) {
+    sendJson(response, 503, {
+      ok: false,
+      error: publicError("INTAKE_NOT_CONFIGURED", "Artihubs intake is not configured yet."),
+      requestId: id
+    });
+    return;
+  }
+
+  if (!databaseUrl || !supabaseServiceRoleKey) {
+    sendJson(response, 503, {
+      ok: false,
+      error: publicError("INTAKE_NOT_CONFIGURED", "Artihubs intake is not configured yet."),
+      requestId: id
+    });
     return;
   }
 
   const row = {
     type,
-    name: String(payload.name || "").trim() || null,
+    name: cleanField(payload, "name") || null,
     email,
-    country: String(payload.country || "").trim() || null,
-    region: String(payload.region || "").trim() || null,
-    field: String(payload.field || "").trim() || null,
-    message: String(payload.message || "").trim() || null,
-    source_path: String(payload.sourcePath || "").trim() || null,
-    metadata: payload.metadata && typeof payload.metadata === "object" ? payload.metadata : {}
+    country: cleanField(payload, "country") || null,
+    region: cleanField(payload, "region") || null,
+    field: cleanField(payload, "field") || null,
+    message: cleanField(payload, "message") || null,
+    source_path: cleanField(payload, "sourcePath") || null,
+    metadata: sanitizeMetadata(payload.metadata)
   };
 
-  const supabaseHeaders = {
-    apikey: supabaseServiceRoleKey,
-    "Content-Type": "application/json",
-    Prefer: "return=representation"
-  };
+  const headers = { ...supabaseHeaders(supabaseServiceRoleKey), Prefer: "return=representation" };
 
-  if (!supabaseServiceRoleKey.startsWith("sb_")) {
-    supabaseHeaders.Authorization = `Bearer ${supabaseServiceRoleKey}`;
+  let insertResponse;
+  try {
+    insertResponse = await safeFetch(`${databaseUrl}/rest/v1/${tableName}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(row)
+    }, 8_000);
+  } catch (error) {
+    sendJson(response, 502, {
+      ok: false,
+      error: publicError("INTAKE_INSERT_FAILED", "Request could not be processed."),
+      requestId: id
+    });
+    return;
   }
 
-  const insertResponse = await fetch(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/public_intake`, {
-    method: "POST",
-    headers: supabaseHeaders,
-    body: JSON.stringify(row)
-  });
-
   if (!insertResponse.ok) {
-    const detail = await insertResponse.text();
-    send(response, 502, { error: "Intake database insert failed.", detail });
+    await insertResponse.text();
+    sendJson(response, 502, {
+      ok: false,
+      error: publicError("INTAKE_INSERT_FAILED", "Request could not be processed."),
+      requestId: id
+    });
     return;
   }
 
   const data = await insertResponse.json();
-  send(response, 200, { ok: true, intake: data[0] || null });
+  const intake = data[0] || null;
+  sendJson(response, 201, {
+    ok: true,
+    data: { id: intake?.id || null, status: intake?.status || "received" },
+    requestId: id
+  });
 };

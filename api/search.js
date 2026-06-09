@@ -1,28 +1,73 @@
 const fs = require("fs");
 const path = require("path");
+const { clientIp, handleCorsPreflight, isJsonRequest, originAllowed, publicError, readJson, requestId, safeFetch, setCorsHeaders, sendJson } = require("./_utils/http");
+const { enforceRateLimit } = require("./_utils/rate-limit");
+const { writeSearchQueryLog } = require("./_utils/search-log");
+const { hasSupabaseServerConfig, supabaseHeaders, supabaseServerKey, supabaseUrl } = require("./_utils/supabase");
 
 const CLAUDE_SEARCH_MODEL = "claude-sonnet-4-6";
 const MAX_QUERY_LENGTH = 700;
-
-function send(response, statusCode, payload) {
-  response.statusCode = statusCode;
-  response.setHeader("Content-Type", "application/json");
-  response.setHeader("X-Content-Type-Options", "nosniff");
-  response.end(JSON.stringify(payload));
-}
-
-async function readJson(request) {
-  const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
-  const body = Buffer.concat(chunks.map((chunk) => (Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)))).toString(
-    "utf8"
-  );
-  return body ? JSON.parse(body) : {};
-}
+const MAX_BODY_BYTES = 5_000;
+const MAX_MATCHES = 8;
+let cachedMakers = null;
+let cachedPublicProfiles = null;
+let cachedPublicProfilesAt = 0;
 
 function loadMakers() {
+  if (cachedMakers) return cachedMakers;
   const filePath = path.join(__dirname, "..", "data", "makers.json");
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  cachedMakers = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  return cachedMakers;
+}
+
+async function loadPublicMakerProfiles() {
+  const now = Date.now();
+  if (cachedPublicProfiles && now - cachedPublicProfilesAt < 60_000) return cachedPublicProfiles;
+
+  const query = new URLSearchParams({
+    select: "id,name,country,region,field,capability,tags,summary",
+    is_active: "eq.true",
+    order: "published_at.desc",
+    limit: "100"
+  });
+
+  const response = await safeFetch(`${supabaseUrl()}/rest/v1/public_maker_profiles?${query.toString()}`, {
+    method: "GET",
+    headers: supabaseHeaders(supabaseServerKey())
+  }, 8_000);
+
+  if (!response.ok) {
+    throw new Error(`Public profile load failed: ${response.status}`);
+  }
+
+  const rows = await response.json();
+  cachedPublicProfiles = rows.map((row) => ({
+    name: row.name,
+    country: row.country,
+    region: row.region,
+    field: row.field,
+    capability: row.capability,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+    summary: row.summary,
+    publicProfileId: row.id
+  }));
+  cachedPublicProfilesAt = now;
+  return cachedPublicProfiles;
+}
+
+async function loadSearchProfiles() {
+  if (process.env.SEARCH_PROFILE_SOURCE === "database" && hasSupabaseServerConfig()) {
+    try {
+      const profiles = await loadPublicMakerProfiles();
+      if (profiles.length > 0) {
+        return { makers: profiles, profileSource: "public_maker_profiles" };
+      }
+    } catch (error) {
+      return { makers: loadMakers(), profileSource: "local_fallback" };
+    }
+  }
+
+  return { makers: loadMakers(), profileSource: "local" };
 }
 
 function normalize(value) {
@@ -77,7 +122,55 @@ function mergeClaudeMatches(makers, claudeMatches) {
     });
   });
 
-  return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, 8);
+  return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, MAX_MATCHES);
+}
+
+function tokenize(value) {
+  return normalize(value)
+    .split(/[^a-z0-9가-힣]+/i)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 1);
+}
+
+function fallbackRank({ query, makers }) {
+  const queryTokens = tokenize(query);
+  const queryText = normalize(query);
+  const scored = makers.map((maker) => {
+    const makerText = normalize(
+      [
+        maker.name,
+        maker.country,
+        maker.region,
+        maker.field,
+        maker.capability,
+        maker.summary,
+        ...(maker.tags || [])
+      ].join(" ")
+    );
+    const matches = queryTokens.filter((token) => makerText.includes(token));
+    let score = matches.length / Math.max(queryTokens.length, 1);
+    if (queryText.includes(normalize(maker.country))) score += 0.2;
+    if (queryText.includes(normalize(maker.region))) score += 0.18;
+    if (queryText.includes(normalize(maker.field))) score += 0.22;
+    if (queryText.includes(normalize(maker.capability))) score += 0.28;
+    return {
+      ...maker,
+      rankSource: "fallback",
+      relevance: Math.max(0.1, Math.min(0.92, score)),
+      reason:
+        matches.length > 0
+          ? `Matched prototype profile terms: ${matches.slice(0, 5).join(", ")}.`
+          : "Included as a broad prototype profile while AI ranking is unavailable.",
+      reasonKo: hasKorean(query) ? "AI 검색이 일시적으로 unavailable 상태라 로컬 프로토타입 랭킹을 사용했습니다." : "",
+      suggestedIntro: `Ask ${maker.name} about ${maker.capability}.`,
+      suggestedIntroKo: hasKorean(query) ? `${maker.name}에게 ${maker.capability} 관련 가능성을 문의하세요.` : ""
+    };
+  });
+
+  return scored
+    .filter((maker) => maker.relevance >= 0.18)
+    .sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name))
+    .slice(0, MAX_MATCHES);
 }
 
 async function claudeRank({ apiKey, query, makers }) {
@@ -95,7 +188,7 @@ async function claudeRank({ apiKey, query, makers }) {
     }))
   };
 
-  const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
+  const anthropicResponse = await safeFetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -117,7 +210,7 @@ async function claudeRank({ apiKey, query, makers }) {
         }
       ]
     })
-  });
+  }, 12_000);
 
   if (!anthropicResponse.ok) {
     throw new Error(`Claude search failed: ${anthropicResponse.status}`);
@@ -135,47 +228,154 @@ async function claudeRank({ apiKey, query, makers }) {
 }
 
 module.exports = async function handler(request, response) {
+  const id = requestId();
+  const startedAt = Date.now();
+  if (handleCorsPreflight(request, response)) return;
+
   if (request.method !== "POST") {
-    send(response, 405, { error: "Method not allowed." });
+    sendJson(response, 405, {
+      ok: false,
+      error: publicError("METHOD_NOT_ALLOWED", "Method not allowed."),
+      requestId: id
+    });
+    return;
+  }
+
+  if (!originAllowed(request)) {
+    sendJson(response, 403, {
+      ok: false,
+      error: publicError("ORIGIN_NOT_ALLOWED", "Request origin is not allowed."),
+      requestId: id
+    });
+    return;
+  }
+  setCorsHeaders(request, response);
+
+  if (!isJsonRequest(request)) {
+    sendJson(response, 415, {
+      ok: false,
+      error: publicError("UNSUPPORTED_MEDIA_TYPE", "Content-Type must be application/json."),
+      requestId: id
+    });
     return;
   }
 
   let payload;
   try {
-    payload = await readJson(request);
+    payload = await readJson(request, MAX_BODY_BYTES);
   } catch (error) {
-    send(response, 400, { error: "Invalid JSON body." });
+    const code = error.message === "body_too_large" ? "PAYLOAD_TOO_LARGE" : "INVALID_JSON";
+    const message = error.message === "body_too_large" ? "Request body is too large." : "Invalid JSON body.";
+    sendJson(response, 400, { ok: false, error: publicError(code, message), requestId: id });
     return;
   }
 
   const query = String(payload.query || "").trim().slice(0, MAX_QUERY_LENGTH);
-  const makers = loadMakers();
+  let makers;
+  let profileSource = "local";
+  try {
+    const loaded = await loadSearchProfiles();
+    makers = loaded.makers;
+    profileSource = loaded.profileSource;
+  } catch (error) {
+    sendJson(response, 503, {
+      ok: false,
+      error: publicError("MAKER_DATA_UNAVAILABLE", "Maker data is temporarily unavailable."),
+      requestId: id
+    });
+    return;
+  }
+
+  const limited = await enforceRateLimit({ key: `search:${clientIp(request)}`, limit: 30, windowMs: 60 * 1000 });
+  if (!limited.allowed) {
+    sendJson(response, 429, {
+      ok: false,
+      error: publicError("RATE_LIMITED", "Too many searches. Please try again later."),
+      requestId: id
+    });
+    return;
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
   if (!query) {
-    send(response, 200, {
-      ok: true,
+    const emptyPayload = {
       summary: "Enter a natural-language request to search Artihubs.",
-      matches: []
+      summaryKo: "",
+      matches: [],
+      rankSource: "idle",
+      degraded: false,
+      profileSource
+    };
+    sendJson(response, 200, {
+      ok: true,
+      ...emptyPayload,
+      data: emptyPayload,
+      requestId: id
     });
     return;
   }
 
   if (!apiKey) {
-    send(response, 503, {
-      ok: false,
-      error: "Artihubs search is not configured."
+    const fallbackPayload = {
+      mode: "fallback",
+      rankSource: "fallback",
+      degraded: true,
+      profileSource,
+      summary: "AI search is not configured, so Artihubs used local prototype ranking.",
+      summaryKo: hasKorean(query) ? "AI 검색 설정이 없어 로컬 프로토타입 랭킹을 사용했습니다." : "",
+      matches: fallbackRank({ query, makers })
+    };
+    await writeSearchQueryLog({
+      query,
+      matches: fallbackPayload.matches,
+      rankSource: fallbackPayload.rankSource,
+      degraded: fallbackPayload.degraded,
+      latencyMs: Date.now() - startedAt
+    });
+    sendJson(response, 200, {
+      ok: true,
+      ...fallbackPayload,
+      data: fallbackPayload,
+      requestId: id
     });
     return;
   }
 
   try {
     const ranked = await claudeRank({ apiKey, query, makers });
-    send(response, 200, { ok: true, ...ranked });
+    const claudePayload = { mode: "claude", rankSource: "claude", degraded: false, profileSource, ...ranked };
+    await writeSearchQueryLog({
+      query,
+      matches: claudePayload.matches,
+      rankSource: claudePayload.rankSource,
+      model: CLAUDE_SEARCH_MODEL,
+      degraded: claudePayload.degraded,
+      latencyMs: Date.now() - startedAt
+    });
+    sendJson(response, 200, { ok: true, ...claudePayload, data: claudePayload, requestId: id });
   } catch (error) {
-    send(response, 502, {
-      ok: false,
-      error: "Artihubs search is temporarily unavailable."
+    const fallbackPayload = {
+      mode: "fallback",
+      rankSource: "fallback",
+      degraded: true,
+      profileSource,
+      summary: "AI search is temporarily unavailable, so Artihubs used local prototype ranking.",
+      summaryKo: hasKorean(query) ? "AI 검색이 일시적으로 unavailable 상태라 로컬 프로토타입 랭킹을 사용했습니다." : "",
+      matches: fallbackRank({ query, makers })
+    };
+    await writeSearchQueryLog({
+      query,
+      matches: fallbackPayload.matches,
+      rankSource: fallbackPayload.rankSource,
+      degraded: fallbackPayload.degraded,
+      latencyMs: Date.now() - startedAt
+    });
+    sendJson(response, 200, {
+      ok: true,
+      ...fallbackPayload,
+      data: fallbackPayload,
+      requestId: id
     });
   }
 };

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Account Demo</title>
+    <meta name="description" content="Test the Artihubs account access flow for signup, login, logout, and session state." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page account-page">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="../login/">Sign in</a>
+          <a href="../signup/">Join</a>
+          <a class="is-active" href="./" aria-current="page">Account</a>
+          <a class="language-link" href="../ko/" lang="ko">한국어</a>
+        </div>
+      </nav>
+
+      <section class="hero account-hero">
+        <div>
+          <p class="eyebrow">Account access</p>
+          <h1>Test signup and login before member launch.</h1>
+          <p class="lede">Create a safe demo session, inspect the server Auth boundary, and confirm how private Maker states stay separate from public search.</p>
+          <div class="actions">
+            <a class="button secondary" href="../for-makers/">Maker path</a>
+            <a class="button secondary" href="../explore/">Public search</a>
+          </div>
+        </div>
+
+        <aside class="account-status-panel" aria-labelledby="session-title">
+          <p class="eyebrow">Current session</p>
+          <h2 id="session-title">Signed out</h2>
+          <div class="account-meta" id="account-session-details">
+            <div><span>Mode</span><strong>None</strong></div>
+            <div><span>Email</span><strong>-</strong></div>
+            <div><span>Public listing</span><strong>Not active</strong></div>
+          </div>
+          <div class="account-panel-actions">
+            <button class="button secondary" id="check-server-auth" type="button">Check server auth</button>
+            <button class="button secondary" id="sign-out" type="button">Sign out</button>
+          </div>
+          <p class="form-status" id="server-auth-status" aria-live="polite"></p>
+        </aside>
+      </section>
+
+      <section class="section account-grid" aria-labelledby="account-form-title">
+        <div class="form-panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Demo access</p>
+              <h2 id="account-form-title">Open an Artihubs account session.</h2>
+            </div>
+          </div>
+
+          <div class="tab-bar auth-tabs" role="tablist" aria-label="Account access mode">
+            <button class="tab-button is-active" id="signup-tab" type="button" role="tab" aria-selected="true" data-auth-mode="signup">Sign up</button>
+            <button class="tab-button" id="login-tab" type="button" role="tab" aria-selected="false" data-auth-mode="login">Log in</button>
+          </div>
+
+          <form class="auth-form" id="account-auth-form">
+            <div class="form-grid">
+              <div class="field full" id="display-name-field">
+                <label for="account-display-name">Name or brand</label>
+                <input id="account-display-name" name="displayName" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="account-email">Email</label>
+                <input id="account-email" name="email" type="email" autocomplete="email" required />
+              </div>
+              <div class="field">
+                <label for="account-password">Password</label>
+                <input id="account-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+              </div>
+            </div>
+            <button class="button primary" id="account-submit" type="submit">Create account</button>
+            <p class="form-status" id="account-form-status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <aside class="account-dashboard" aria-labelledby="dashboard-title">
+          <p class="eyebrow">Member boundary</p>
+          <h2 id="dashboard-title">Private until reviewed.</h2>
+          <div class="account-state-list">
+            <div>
+              <strong>Profile</strong>
+              <span id="profile-state">No private profile loaded</span>
+            </div>
+            <div>
+              <strong>Maker status</strong>
+              <span id="maker-state">Draft is not public</span>
+            </div>
+            <div>
+              <strong>Search payload</strong>
+              <span>Approved public profiles only</span>
+            </div>
+            <div>
+              <strong>Admin gate</strong>
+              <span>Server role required</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="footer">
+        <p>Account demo keeps private member state separate from public maker discovery.</p>
+        <a href="../explore/">Explore public hubs</a>
+      </footer>
+    </main>
+    <script src="./account.js"></script>
+  </body>
+</html>

@@ -2,6 +2,7 @@ let currentMatches = [];
 let currentView = "cards";
 let currentSummary = "Ask in natural language, or browse the current prototype maker set.";
 let currentSummaryKo = "";
+let searchSequence = 0;
 
 const form = document.querySelector("#ai-search-form");
 const searchInput = document.querySelector("#ai-search-input");
@@ -102,26 +103,31 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
 }
 
 async function searchMakers(query) {
+  const sequence = ++searchSequence;
   if (searchStatus) searchStatus.textContent = query ? "Searching Artihubs..." : "";
 
   try {
-    const response = await fetch("../api/search/", {
+    const response = await fetch("/api/v1/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query })
     });
 
     const data = await response.json().catch(() => ({}));
+    if (sequence !== searchSequence) return;
     if (!response.ok || data.ok === false) {
-      throw new Error(data.error || "Artihubs search is temporarily unavailable.");
+      throw new Error(data.error?.message || data.error || "Artihubs search is temporarily unavailable.");
     }
     renderMatches(data.matches || [], data.summary, data.summaryKo);
     if (searchStatus) {
       searchStatus.textContent = query
-        ? "Matched by Artihubs."
+        ? data.degraded
+          ? "Local prototype ranking is active while AI search is unavailable."
+          : "Matched by Artihubs."
         : "Artihubs search is ready.";
     }
   } catch (error) {
+    if (sequence !== searchSequence) return;
     renderMatches([], error.message, "");
     if (searchStatus) searchStatus.textContent = "Artihubs could not complete this search.";
   }

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Create Account</title>
+    <meta name="description" content="Create a private Artihubs account for Maker or Seeker workflows." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page auth-page">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a href="../login/">Sign in</a>
+          <a class="is-active" href="./" aria-current="page">Join</a>
+          <a class="language-link" href="../ko/" lang="ko">한국어</a>
+        </div>
+      </nav>
+
+      <section class="auth-shell" aria-labelledby="signup-title">
+        <div class="auth-copy">
+          <p class="eyebrow">Private account</p>
+          <h1 id="signup-title">Create your Artihubs account.</h1>
+          <p class="lede">Start private. Publish only after review.</p>
+          <div class="auth-proof-grid" aria-label="Signup privacy guardrails">
+            <div><strong>Private first</strong><span>Account creation does not publish a Maker profile.</span></div>
+            <div><strong>Region-safe</strong><span>Early public signals stop at country and region.</span></div>
+            <div><strong>Review gate</strong><span>Public profile fields are reviewed before they appear.</span></div>
+          </div>
+        </div>
+
+        <form class="form-panel auth-card" data-signup-form>
+          <div class="form-grid">
+            <div class="field full">
+              <label for="signup-name">Name or organization</label>
+              <input id="signup-name" name="displayName" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="signup-email">Email</label>
+              <input id="signup-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+            </div>
+            <fieldset class="field full role-intent">
+              <legend>Role intent</legend>
+              <label>
+                <input type="radio" name="roleIntent" value="maker" checked />
+                <span>Maker</span>
+              </label>
+              <label>
+                <input type="radio" name="roleIntent" value="seeker" />
+                <span>Seeker</span>
+              </label>
+            </fieldset>
+          </div>
+          <p class="privacy-note">Creating an account does not publish a public Maker profile. Public profile fields are reviewed before they appear in Artihubs.</p>
+          <button class="button primary" type="submit">Create account</button>
+          <a class="button secondary auth-secondary-link" href="../login/">Already have an account? Sign in</a>
+          <p class="form-status" data-auth-status aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <script src="../auth-flow.js"></script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | Sign In</title>
+    <meta name="description" content="Sign in to return to your Artihubs Maker profile, Seeker request, or review queue." />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page auth-page">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="Primary navigation">
+          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../for-makers/">For Makers</a>
+          <a href="../for-seekers/">For Seekers</a>
+          <a href="../explore/">Explore Hubs</a>
+          <a class="is-active" href="./" aria-current="page">Sign in</a>
+          <a href="../signup/">Join</a>
+          <a class="language-link" href="../ko/" lang="ko">한국어</a>
+        </div>
+      </nav>
+
+      <section class="auth-shell login-layout" aria-labelledby="login-title">
+        <div class="auth-copy">
+          <p class="eyebrow">Return to workspace</p>
+          <h1 id="login-title">Sign in to Artihubs.</h1>
+          <p class="lede">Return to your maker profile, seeker request, or review queue.</p>
+          <div class="auth-proof-grid">
+            <div><strong>Profile draft</strong><span>Continue private Maker profile work.</span></div>
+            <div><strong>Seeker request</strong><span>Revisit structured requests and matches.</span></div>
+            <div><strong>Review queue</strong><span>Admin access remains role-gated.</span></div>
+          </div>
+        </div>
+
+        <form class="form-panel auth-card" data-login-form>
+          <div class="form-grid">
+            <div class="field full">
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field full">
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" minlength="8" required />
+            </div>
+          </div>
+          <button class="button primary" type="submit">Sign in</button>
+          <div class="auth-link-row">
+            <button class="button secondary" type="button" data-forgot-password>Forgot password?</button>
+            <a class="button secondary" href="../signup/">Create account</a>
+          </div>
+          <p class="form-status" data-auth-status aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <script src="../auth-flow.js"></script>
+  </body>
+</html>
