@@ -80,13 +80,13 @@ const headerMap = new Map(globalHeaders.map((entry) => [entry.key.toLowerCase(),
   assert(headerMap.has(key), `vercel.json should set ${key}.`);
 });
 
-assert(headerMap.get("x-frame-options") === "DENY", "vercel.json should deny framing");
+assert(headerMap.get("x-frame-options") === "SAMEORIGIN", "vercel.json should allow same-origin iframe only.");
 assert(headerMap.get("x-content-type-options") === "nosniff", "vercel.json should disable MIME sniffing");
 assert(headerMap.get("content-security-policy")?.includes("frame-src 'self'"), "vercel.json should allow same-origin globe iframe.");
 const csp = headerMap.get("content-security-policy") || "";
 assert(csp.includes("default-src 'self'"), "CSP should default to self.");
 assert(csp.includes("object-src 'none'"), "CSP should block plugins.");
-assert(csp.includes("frame-ancestors 'none'"), "CSP should block framing.");
+assert(csp.includes("frame-ancestors 'self'"), "CSP should restrict framing to same-origin pages.");
 assert(csp.includes("https://challenges.cloudflare.com"), "CSP should allow Cloudflare Turnstile.");
 assert(csp.includes("https://cdn.jsdelivr.net"), "CSP should allow the Living Globe CDN modules.");
 assert(!csp.includes("'unsafe-inline'"), "CSP should not allow unsafe inline scripts or styles.");
