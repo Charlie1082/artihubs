@@ -65,7 +65,10 @@ for (const filePath of clientFiles) {
   }
 
   if (path.extname(filePath) === ".html") {
-    assert(!/<script(?![^>]*\bsrc=)[^>]*>/i.test(text), `${rel} must not use inline script tags.`);
+    assert(
+      !/<script(?![^>]*\bsrc=)(?![^>]*\btype=["']application\/ld\+json["'])[^>]*>/i.test(text),
+      `${rel} must not use inline executable script tags.`
+    );
     assert(!/\sstyle=["']/i.test(text), `${rel} must not use inline style attributes.`);
   }
 

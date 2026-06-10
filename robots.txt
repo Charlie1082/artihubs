@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /account/
+Disallow: /welcome/
+Disallow: /cofounder-mockup/
+Disallow: /privacy/
+Disallow: /terms/
+
+Sitemap: https://www.artihubs.com/sitemap.xml

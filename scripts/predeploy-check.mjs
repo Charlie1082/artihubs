@@ -34,6 +34,11 @@ const checks = [
     args: ["scripts/client-security-smoke-test.mjs"]
   },
   {
+    name: "seo",
+    cwd: projectRoot,
+    args: ["scripts/seo-smoke-test.mjs"]
+  },
+  {
     name: "secrets",
     cwd: projectRoot,
     args: ["scripts/secrets-smoke-test.mjs"]

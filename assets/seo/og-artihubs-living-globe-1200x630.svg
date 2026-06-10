@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Artihubs Living Globe open graph image</title>
+  <desc id="desc">A dark Artihubs living globe with region-safe maker signals and brand text for launch link previews.</desc>
+  <defs>
+    <radialGradient id="globeFill" cx="50%" cy="45%" r="58%">
+      <stop offset="0%" stop-color="#1f3b4a"/>
+      <stop offset="48%" stop-color="#122231"/>
+      <stop offset="100%" stop-color="#071016"/>
+    </radialGradient>
+    <linearGradient id="trace" x1="120" y1="0" x2="1080" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#48e5ff" stop-opacity="0"/>
+      <stop offset="46%" stop-color="#48e5ff" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#d6a84f" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <filter id="signalGlow" x="-140%" y="-140%" width="380%" height="380%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="#07090d"/>
+  <path d="M0 0h1200v630H0z" fill="#0a0f14"/>
+  <path d="M742 82c172 6 326 86 411 216v332H0V353C118 208 318 135 548 147c62-44 127-67 194-65Z" fill="#0f171d"/>
+  <path d="M0 492c168-72 362-85 582-38 210 45 423 34 618-36v212H0Z" fill="#101715"/>
+
+  <g transform="translate(660 312)">
+    <circle r="223" fill="#071016"/>
+    <circle r="218" fill="url(#globeFill)" stroke="#233a43" stroke-width="2"/>
+    <ellipse rx="217" ry="82" fill="none" stroke="#33535d" stroke-width="1.5" opacity="0.45"/>
+    <ellipse rx="176" ry="217" fill="none" stroke="#31505c" stroke-width="1.2" opacity="0.38"/>
+    <ellipse rx="92" ry="217" fill="none" stroke="#31505c" stroke-width="1.2" opacity="0.26"/>
+    <path d="M-194-61c80-39 144-43 207-15 57 26 100 19 166-7" fill="none" stroke="#90fff1" stroke-width="1.4" opacity="0.35"/>
+    <path d="M-178 26c58 27 118 28 183 2 78-32 142-20 197 25" fill="none" stroke="#d6a84f" stroke-width="1.5" opacity="0.3"/>
+    <path d="M-91-139c-18 52-21 105-7 160 13 50 5 96-24 143" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.14"/>
+    <path d="M67-154c34 65 44 133 27 204-12 52-4 98 24 139" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.14"/>
+    <path d="M-198-82c144-96 323-99 481-12" fill="none" stroke="url(#trace)" stroke-width="5" stroke-linecap="round" opacity="0.78"/>
+    <path d="M-114 201c113-79 268-102 420-54" fill="none" stroke="#48e5ff" stroke-width="2" stroke-linecap="round" opacity="0.22"/>
+    <path d="M-251 84c122 86 288 101 458 39" fill="none" stroke="#d6a84f" stroke-width="2" stroke-linecap="round" opacity="0.18"/>
+    <g filter="url(#signalGlow)">
+      <circle cx="-98" cy="-58" r="8" fill="#48e5ff" opacity="0.92"/>
+      <circle cx="6" cy="-14" r="6" fill="#d6a84f" opacity="0.88"/>
+      <circle cx="92" cy="-90" r="7" fill="#8bf7d0" opacity="0.9"/>
+      <circle cx="128" cy="50" r="6" fill="#48e5ff" opacity="0.85"/>
+      <circle cx="-34" cy="108" r="5" fill="#d6a84f" opacity="0.78"/>
+    </g>
+    <circle cx="-98" cy="-58" r="4.5" fill="#e8ffff"/>
+    <circle cx="6" cy="-14" r="3.5" fill="#fff0c4"/>
+    <circle cx="92" cy="-90" r="4" fill="#ecfff7"/>
+    <circle cx="128" cy="50" r="3.5" fill="#e8ffff"/>
+    <circle cx="-34" cy="108" r="3.2" fill="#fff0c4"/>
+    <circle r="239" fill="none" stroke="#48e5ff" stroke-width="2" opacity="0.1" filter="url(#softGlow)"/>
+  </g>
+
+  <g transform="translate(72 74)">
+    <rect x="0" y="0" width="60" height="60" rx="14" fill="#f7f6f0"/>
+    <path d="M30 9 49 51h-9l-4-8H24l-4 8h-9L30 9Zm0 14-5 12h10l-5-12Z" fill="#090b0f"/>
+    <rect x="22" y="37" width="16" height="4" rx="2" fill="#d6a84f"/>
+    <text x="80" y="39" font-family="Inter, Helvetica, Arial, sans-serif" font-size="31" font-weight="700" fill="#f7f6f0">Artihubs</text>
+  </g>
+
+  <g transform="translate(74 232)">
+    <text x="0" y="0" font-family="Inter, Helvetica, Arial, sans-serif" font-size="58" font-weight="760" fill="#f7f6f0">Borderless Maker</text>
+    <text x="0" y="68" font-family="Inter, Helvetica, Arial, sans-serif" font-size="58" font-weight="760" fill="#f7f6f0">Discovery</text>
+    <text x="2" y="134" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="500" fill="#c9d7d8">Region-safe capability signals for independent makers.</text>
+  </g>
+
+  <g transform="translate(74 512)">
+    <rect width="235" height="44" rx="22" fill="#142329" stroke="#29434a"/>
+    <circle cx="28" cy="22" r="6" fill="#48e5ff"/>
+    <text x="48" y="29" font-family="Inter, Helvetica, Arial, sans-serif" font-size="17" font-weight="650" fill="#e8ffff">Living Globe visual</text>
+    <rect x="257" width="210" height="44" rx="22" fill="#171b16" stroke="#403923"/>
+    <circle cx="285" cy="22" r="6" fill="#d6a84f"/>
+    <text x="305" y="29" font-family="Inter, Helvetica, Arial, sans-serif" font-size="17" font-weight="650" fill="#fff2cb">Review-gated signals</text>
+  </g>
+</svg>
