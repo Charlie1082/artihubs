@@ -128,6 +128,9 @@ const exploreRegionLink = document.querySelector("#explore-region-link");
 
 const searchParams = new URLSearchParams(window.location.search);
 const isLandingEmbed = searchParams.get("embed") === "landing";
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let prefersReducedMotion = reducedMotionQuery.matches;
+const isMobileViewport = window.matchMedia("(max-width: 700px)").matches;
 const size = 760;
 const sphereRadius = 342;
 const minZoom = 0.86;
@@ -135,16 +138,20 @@ const maxZoom = 3;
 const minCountryZoom = 1;
 const maxCountryZoom = 3;
 const idleRotationDelay = 1800;
-const autoRotationSpeed = 0.00118;
+const baseAutoRotationSpeed = 0.00118;
+const graticuleGeometry = geoGraticule10();
+const autoRotationSpeed = isLandingEmbed || isMobileViewport ? baseAutoRotationSpeed * 0.82 : baseAutoRotationSpeed;
+const autoRotationFrameMs = isLandingEmbed || isMobileViewport ? 33 : 16;
 const globeProjection = geoOrthographic()
   .translate([size / 2, size / 2])
   .scale(sphereRadius)
   .clipAngle(90)
-  .precision(isLandingEmbed ? 0.85 : 0.65)
+  .precision(isLandingEmbed ? 1 : isMobileViewport ? 0.9 : 0.75)
   .rotate([-124, -24, 0]);
 let projection = globeProjection;
 const path = geoPath(projection);
 const regionsByCountry = new Map();
+const regionsById = new Map(regions.map((region) => [region.id, region]));
 const adminCodeByCountryId = {
   "076": "BRA",
   "276": "DEU",
@@ -152,6 +159,14 @@ const adminCodeByCountryId = {
   "392": "JPN",
   "410": "KOR",
   "840": "USA"
+};
+const countryFitBoundsByCountryId = {
+  "076": [-74.0379, -33.734, -34.6566, 5.1747],
+  "276": [5.8671, 47.2703, 15.0418, 55.0462],
+  "356": [68.0938, 6.7598, 97.4115, 37.0775],
+  "392": [122.9337, 24.0457, 153.9866, 45.5229],
+  "410": [124.6136, 33.1976, 130.9207, 38.6243],
+  "840": [-124.7627, 24.5231, -66.9506, 49.3844]
 };
 
 regions.forEach((region) => {
@@ -176,8 +191,14 @@ let countryPan = [0, 0];
 let viewMode = "globe";
 let pausedUntil = performance.now() + 900;
 let lastAutoFrame = performance.now();
+let lastAutoUpdateAt = performance.now();
 let suppressMapClickUntil = 0;
 let mapStyleDirty = true;
+let markerLayerSize = size;
+let mapUpdateFrame = 0;
+let adminPreloadActive = false;
+const adminFeaturePromises = new Map();
+const adminPreloadQueue = [];
 
 function regionLabel(region) {
   return `${region.country} / ${region.regionName}`;
@@ -188,15 +209,80 @@ function normalizeCountryId(id) {
 }
 
 function pauseAutoRotation(duration = idleRotationDelay) {
-  pausedUntil = performance.now() + duration;
+  pausedUntil = prefersReducedMotion ? Number.POSITIVE_INFINITY : performance.now() + duration;
+}
+
+function syncReducedMotionPreference(event = reducedMotionQuery) {
+  prefersReducedMotion = event.matches;
+  stage.classList.toggle("prefers-reduced-motion", prefersReducedMotion);
+  if (prefersReducedMotion) pausedUntil = Number.POSITIVE_INFINITY;
+  else if (!Number.isFinite(pausedUntil)) pausedUntil = performance.now() + 900;
 }
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function isActivationKey(event) {
+  return event.key === "Enter" || event.key === " ";
+}
+
 function markMapStyleDirty() {
   mapStyleDirty = true;
+}
+
+function requestIdleWork(callback, timeout = 1400) {
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(callback, { timeout });
+    return;
+  }
+  window.setTimeout(callback, 180);
+}
+
+function requestMapUpdate() {
+  if (mapUpdateFrame) return;
+  mapUpdateFrame = requestAnimationFrame(() => {
+    mapUpdateFrame = 0;
+    updateMap();
+  });
+}
+
+function updateMarkerLayerSize() {
+  markerLayerSize = markerLayer.getBoundingClientRect().width || size;
+}
+
+function queueAdminPreload(countryId, { front = false, userIntent = false } = {}) {
+  if (isLandingEmbed || !countryId || !adminCodeByCountryId[countryId]) return;
+  if (isMobileViewport && !userIntent) return;
+  if (adminFeatureCache.has(countryId) || adminFeaturePromises.has(countryId)) return;
+  if (adminPreloadQueue.includes(countryId)) return;
+
+  if (front) adminPreloadQueue.unshift(countryId);
+  else adminPreloadQueue.push(countryId);
+
+  if (!adminPreloadActive) drainAdminPreloadQueue();
+}
+
+function drainAdminPreloadQueue() {
+  if (!adminPreloadQueue.length) {
+    adminPreloadActive = false;
+    return;
+  }
+
+  adminPreloadActive = true;
+  requestIdleWork(() => {
+    const countryId = adminPreloadQueue.shift();
+    if (!countryId) {
+      drainAdminPreloadQueue();
+      return;
+    }
+
+    loadAdminRegions(countryId)
+      .catch((error) => console.warn(error))
+      .finally(() => {
+        window.setTimeout(drainAdminPreloadQueue, isMobileViewport ? 720 : 360);
+      });
+  });
 }
 
 function setZoom(nextZoom, pauseDuration = 2400) {
@@ -206,7 +292,7 @@ function setZoom(nextZoom, pauseDuration = 2400) {
   stage.dataset.zoom = zoomLevel.toFixed(2);
   zoomStatus.textContent = `${Math.round(zoomLevel * 100)}%`;
   pauseAutoRotation(pauseDuration);
-  updateMap();
+  requestMapUpdate();
 }
 
 function clientPointToSvg(event) {
@@ -253,7 +339,7 @@ function setCountryZoom(nextZoom, focalPoint = [size / 2, size / 2]) {
     nextTranslate[1] - countryBaseTranslate[1]
   ];
   applyCountryView();
-  updateMap();
+  requestMapUpdate();
 }
 
 function getCountryRegions(countryId) {
@@ -341,8 +427,22 @@ function featureMatchesRegion(adminFeature, region) {
   return pointInFeature(region.coordinates, adminFeature);
 }
 
-function rewindRing(ring) {
-  return [...ring].reverse();
+function signedRingArea(ring) {
+  let area = 0;
+  for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index, index += 1) {
+    area += ring[previous][0] * ring[index][1] - ring[index][0] * ring[previous][1];
+  }
+  return area / 2;
+}
+
+function orientRingForD3(ring, exterior = false) {
+  const clockwise = signedRingArea(ring) < 0;
+  const shouldBeClockwise = exterior;
+  return clockwise === shouldBeClockwise ? ring : [...ring].reverse();
+}
+
+function orientPolygonForD3(polygon) {
+  return polygon.map((ring, index) => orientRingForD3(ring, index === 0));
 }
 
 function rewindGeometryForD3(geometry) {
@@ -350,13 +450,13 @@ function rewindGeometryForD3(geometry) {
   if (geometry.type === "Polygon") {
     return {
       ...geometry,
-      coordinates: geometry.coordinates.map(rewindRing)
+      coordinates: orientPolygonForD3(geometry.coordinates)
     };
   }
   if (geometry.type === "MultiPolygon") {
     return {
       ...geometry,
-      coordinates: geometry.coordinates.map((polygon) => polygon.map(rewindRing))
+      coordinates: geometry.coordinates.map(orientPolygonForD3)
     };
   }
   return geometry;
@@ -367,6 +467,28 @@ function featureCollection(features) {
     type: "FeatureCollection",
     features
   };
+}
+
+function visitCoordinates(coordinates, callback) {
+  if (typeof coordinates?.[0] === "number") {
+    callback(coordinates);
+    return;
+  }
+  coordinates?.forEach((item) => visitCoordinates(item, callback));
+}
+
+function featureBounds(geoFeature) {
+  const bounds = [Infinity, Infinity, -Infinity, -Infinity];
+  const features = geoFeature?.type === "FeatureCollection" ? geoFeature.features : [geoFeature];
+  features.forEach((item) => {
+    visitCoordinates(item?.geometry?.coordinates, ([longitude, latitude]) => {
+      bounds[0] = Math.min(bounds[0], longitude);
+      bounds[1] = Math.min(bounds[1], latitude);
+      bounds[2] = Math.max(bounds[2], longitude);
+      bounds[3] = Math.max(bounds[3], latitude);
+    });
+  });
+  return bounds.every(Number.isFinite) ? bounds : [-10, -10, 10, 10];
 }
 
 function isMainlandAdminFeature(countryId, adminFeature) {
@@ -385,17 +507,39 @@ function isMainlandAdminFeature(countryId, adminFeature) {
   return !outlyingNames.some((outlyingName) => name === outlyingName || name.includes(outlyingName));
 }
 
+function getRenderableAdminFeatures(features) {
+  return features.filter((adminFeature) => isMainlandAdminFeature(adminFeature.__countryId, adminFeature));
+}
+
 function getProjectionFeature(countryId, countryFeature) {
-  const adminFeatures = adminFeatureCache.get(countryId) || [];
-  const focusAdminFeatures = adminFeatures.filter((adminFeature) => isMainlandAdminFeature(countryId, adminFeature));
-  if (focusAdminFeatures.length) return featureCollection(focusAdminFeatures);
   return countryFeature;
 }
 
-function createCountryProjection(countryId, countryFeature) {
+function createProjectionFromBounds(bounds) {
+  const [minLongitude, minLatitude, maxLongitude, maxLatitude] = bounds;
+  const [[left, top], [right, bottom]] = [[80, 74], [680, 686]];
+  const radians = Math.PI / 180;
+  const safeMinLatitude = clamp(minLatitude, -84, 84);
+  const safeMaxLatitude = clamp(maxLatitude, -84, 84);
+  const x0 = minLongitude * radians;
+  const x1 = maxLongitude * radians;
+  const y0 = -Math.log(Math.tan(Math.PI / 4 + (safeMaxLatitude * radians) / 2));
+  const y1 = -Math.log(Math.tan(Math.PI / 4 + (safeMinLatitude * radians) / 2));
+  const scale = Math.min((right - left) / Math.max(x1 - x0, 0.001), (bottom - top) / Math.max(y1 - y0, 0.001));
+  const translate = [
+    (left + right) / 2 - scale * ((x0 + x1) / 2),
+    (top + bottom) / 2 - scale * ((y0 + y1) / 2)
+  ];
+
   return geoMercator()
     .precision(0.4)
-    .fitExtent([[80, 74], [680, 686]], getProjectionFeature(countryId, countryFeature));
+    .scale(scale)
+    .translate(translate);
+}
+
+function createCountryProjection(countryId, countryFeature) {
+  const bounds = countryFitBoundsByCountryId[countryId] || featureBounds(countryFeature);
+  return createProjectionFromBounds(bounds);
 }
 
 function setProjection(nextProjection) {
@@ -481,8 +625,25 @@ function updateCountryPaths() {
       countryPath.style.setProperty("--country-color", getCountryColor(countryId));
     }
 
+    if (viewMode === "country" && !isSelectedCountry) {
+      if (countryPath.__lastPathMode !== "country-hidden") {
+        countryPath.setAttribute("d", "");
+        countryPath.__lastPathMode = "country-hidden";
+      }
+      return;
+    }
+
+    if (isSelectedCountry && adminFeatureCache.has(countryId)) {
+      if (countryPath.__lastPathMode !== "country-admin-overlay") {
+        countryPath.setAttribute("d", "");
+        countryPath.__lastPathMode = "country-admin-overlay";
+      }
+      return;
+    }
+
     const displayFeature = isSelectedCountry ? getProjectionFeature(countryId, countryPath.__feature) : countryPath.__feature;
     countryPath.setAttribute("d", path(displayFeature) || "");
+    countryPath.__lastPathMode = isSelectedCountry ? "country-focus" : "globe";
   });
 }
 
@@ -510,7 +671,7 @@ function updateFootprints() {
 
 function updateMarkers() {
   markerButtons.forEach((button) => {
-    const region = regions.find((item) => item.id === button.dataset.regionId);
+    const region = button.__region || regionsById.get(button.dataset.regionId);
     const projected = projection(region.coordinates);
     const visible =
       projected &&
@@ -520,13 +681,14 @@ function updateMarkers() {
     button.classList.toggle("is-hidden", !visible);
     if (!visible) return;
 
-    button.style.left = `${(projected[0] / size) * 100}%`;
-    button.style.top = `${(projected[1] / size) * 100}%`;
+    const scale = markerLayerSize / size;
+    button.style.setProperty("--marker-x", `${projected[0] * scale}px`);
+    button.style.setProperty("--marker-y", `${projected[1] * scale}px`);
   });
 }
 
 function updateMap() {
-  graticule.setAttribute("d", viewMode === "globe" ? path(geoGraticule10()) : "");
+  graticule.setAttribute("d", viewMode === "globe" ? path(graticuleGeometry) : "");
   updateCountryPaths();
   updateAdminPaths();
   if (mapStyleDirty) updateFootprints();
@@ -537,29 +699,26 @@ function updateMap() {
 function runMapTransition(callback) {
   if (stage.classList.contains("is-transitioning")) return;
   stage.classList.add("is-transitioning");
+  stage.classList.add("is-performance-pass");
   window.setTimeout(() => {
     callback();
     updateMap();
-    window.setTimeout(() => stage.classList.remove("is-transitioning"), 180);
+    window.setTimeout(() => {
+      stage.classList.remove("is-transitioning");
+      stage.classList.remove("is-performance-pass");
+    }, 180);
   }, 160);
 }
 
-async function enterCountryMap(countryId, region = getCountryRegions(countryId)[0]) {
+function enterCountryMap(countryId, region = getCountryRegions(countryId)[0]) {
   const countryFeature = getCountryFeature(countryId);
   if (!countryFeature) return;
-
-  let countryAdminFeatures = [];
-  try {
-    countryAdminFeatures = await loadAdminRegions(countryId);
-  } catch (adminError) {
-    console.warn(adminError);
-  }
 
   runMapTransition(() => {
     selectedCountryId = countryId;
     viewMode = "country";
     stage.classList.add("is-country-map");
-    paintAdminRegions(countryAdminFeatures);
+    paintAdminRegions(adminFeatureCache.get(countryId) || []);
     setCountryProjection(createCountryProjection(countryId, countryFeature));
     markMapStyleDirty();
     zoomStatus.textContent = getCountryRegions(countryId)[0]?.country || "Map";
@@ -567,6 +726,18 @@ async function enterCountryMap(countryId, region = getCountryRegions(countryId)[
     renderCountrySummary(countryId);
     if (region) renderRegion(region);
   });
+
+  loadAdminRegions(countryId)
+    .then((countryAdminFeatures) => {
+      if (viewMode !== "country" || selectedCountryId !== countryId) return;
+      if (countryZoomLevel === 1 && countryPan[0] === 0 && countryPan[1] === 0) {
+        setCountryProjection(createCountryProjection(countryId, countryFeature));
+      }
+      paintAdminRegions(countryAdminFeatures);
+      markMapStyleDirty();
+      requestMapUpdate();
+    })
+    .catch((adminError) => console.warn(adminError));
 }
 
 function returnToGlobe() {
@@ -587,11 +758,15 @@ function returnToGlobe() {
 
 function createMarker(region) {
   const button = document.createElement("button");
+  const dot = document.createElement("span");
   button.className = "marker";
+  dot.className = "marker-dot";
   button.type = "button";
   button.dataset.regionId = region.id;
+  button.__region = region;
   button.style.setProperty("--marker-color", region.color);
   button.setAttribute("aria-label", `${regionLabel(region)}: ${region.makers.length} registered makers`);
+  button.append(dot);
   if (isLandingEmbed) {
     button.tabIndex = -1;
     markerLayer.append(button);
@@ -600,9 +775,16 @@ function createMarker(region) {
   button.addEventListener("pointerdown", (event) => {
     event.stopPropagation();
     pauseAutoRotation(5200);
+    queueAdminPreload(region.countryId, { front: true, userIntent: true });
   });
   button.addEventListener("mouseenter", () => {
     pauseAutoRotation(5200);
+    queueAdminPreload(region.countryId, { front: true, userIntent: true });
+    renderRegion(region);
+  });
+  button.addEventListener("focus", () => {
+    pauseAutoRotation(5200);
+    queueAdminPreload(region.countryId, { front: true, userIntent: true });
     renderRegion(region);
   });
   button.addEventListener("click", () => {
@@ -626,42 +808,56 @@ async function loadCountries() {
 
 async function loadAdminRegions(countryId) {
   if (adminFeatureCache.has(countryId)) return adminFeatureCache.get(countryId);
+  if (adminFeaturePromises.has(countryId)) return adminFeaturePromises.get(countryId);
 
   const adminCode = adminCodeByCountryId[countryId];
   if (!adminCode) return [];
 
-  let response = await fetch(`./assets/admin-regions/${adminCode}-ADM1.geojson`);
+  const promise = (async () => {
+    let response = await fetch(`./assets/admin-regions-lite/${adminCode}-ADM1.geojson`, { cache: "force-cache" });
 
-  if (!response.ok) {
-    const metadataResponse = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${adminCode}/ADM1/`);
-    if (!metadataResponse.ok) throw new Error("Admin region metadata could not be loaded.");
+    if (!response.ok) {
+      response = await fetch(`./assets/admin-regions/${adminCode}-ADM1.geojson`, { cache: "force-cache" });
+    }
 
-    const metadata = await metadataResponse.json();
-    const geojsonUrl = metadata.simplifiedGeometryGeoJSON || metadata.gjDownloadURL;
-    if (!geojsonUrl) throw new Error("Admin region geometry is unavailable.");
+    if (!response.ok) {
+      const metadataResponse = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${adminCode}/ADM1/`);
+      if (!metadataResponse.ok) throw new Error("Admin region metadata could not be loaded.");
 
-    response = await fetch(geojsonUrl);
+      const metadata = await metadataResponse.json();
+      const geojsonUrl = metadata.simplifiedGeometryGeoJSON || metadata.gjDownloadURL;
+      if (!geojsonUrl) throw new Error("Admin region geometry is unavailable.");
+
+      response = await fetch(geojsonUrl, { cache: "force-cache" });
+    }
+
+    if (!response.ok) throw new Error("Admin region data could not be loaded.");
+
+    const collection = await response.json();
+    const adminFeatures = collection.features
+      .map((rawAdminFeature) => {
+        const adminFeature = {
+          ...rawAdminFeature,
+          geometry: rewindGeometryForD3(rawAdminFeature.geometry)
+        };
+        adminFeature.__countryId = countryId;
+        adminFeature.__regionIds = regions
+          .filter((region) => region.countryId === countryId && featureMatchesRegion(adminFeature, region))
+          .map((region) => region.id);
+        return adminFeature;
+      })
+      .filter(Boolean);
+
+    adminFeatureCache.set(countryId, adminFeatures);
+    return adminFeatures;
+  })();
+
+  adminFeaturePromises.set(countryId, promise);
+  try {
+    return await promise;
+  } finally {
+    adminFeaturePromises.delete(countryId);
   }
-
-  if (!response.ok) throw new Error("Admin region data could not be loaded.");
-
-  const collection = await response.json();
-  const adminFeatures = collection.features
-    .map((rawAdminFeature) => {
-      const adminFeature = {
-        ...rawAdminFeature,
-        geometry: rewindGeometryForD3(rawAdminFeature.geometry)
-      };
-      adminFeature.__countryId = countryId;
-      adminFeature.__regionIds = regions
-        .filter((region) => region.countryId === countryId && featureMatchesRegion(adminFeature, region))
-        .map((region) => region.id);
-      return adminFeature;
-    })
-    .filter(Boolean);
-
-  adminFeatureCache.set(countryId, adminFeatures);
-  return adminFeatures;
 }
 
 function paintCountries(features) {
@@ -675,11 +871,25 @@ function paintCountries(features) {
     countryPath.classList.add("country");
     countryPath.setAttribute("aria-label", country.properties?.name || "Country");
     if (!isLandingEmbed) {
+      if (regionsByCountry.has(countryId)) {
+        countryPath.setAttribute("role", "button");
+        countryPath.setAttribute("tabindex", "0");
+      }
       countryPath.addEventListener("click", () => {
         if (regionsByCountry.has(countryId)) enterCountryMap(countryId);
       });
       countryPath.addEventListener("mouseenter", () => {
+        queueAdminPreload(countryId, { front: true, userIntent: true });
         if (viewMode === "globe" && regionsByCountry.has(countryId)) renderCountrySummary(countryId);
+      });
+      countryPath.addEventListener("focus", () => {
+        queueAdminPreload(countryId, { front: true, userIntent: true });
+        if (viewMode === "globe" && regionsByCountry.has(countryId)) renderCountrySummary(countryId);
+      });
+      countryPath.addEventListener("keydown", (event) => {
+        if (!isActivationKey(event) || !regionsByCountry.has(countryId)) return;
+        event.preventDefault();
+        enterCountryMap(countryId);
       });
     }
     fragment.append(countryPath);
@@ -696,16 +906,27 @@ function paintAdminRegions(features) {
 
   const fragment = document.createDocumentFragment();
 
-  features.forEach((adminFeature) => {
+  getRenderableAdminFeatures(features).forEach((adminFeature) => {
     const adminPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     adminPath.__feature = adminFeature;
     adminPath.dataset.countryId = adminFeature.__countryId;
     adminPath.classList.add("admin-region");
     adminPath.setAttribute("aria-label", adminFeatureName(adminFeature) || "Region");
     if (!isLandingEmbed) {
+      if (adminFeature.__regionIds?.length) {
+        adminPath.setAttribute("role", "button");
+        adminPath.setAttribute("tabindex", "0");
+      }
       adminPath.addEventListener("click", () => {
         const region = regions.find((item) => adminFeature.__regionIds?.includes(item.id));
         if (region) renderRegion(region);
+      });
+      adminPath.addEventListener("keydown", (event) => {
+        if (!isActivationKey(event)) return;
+        const region = regions.find((item) => adminFeature.__regionIds?.includes(item.id));
+        if (!region) return;
+        event.preventDefault();
+        renderRegion(region);
       });
     }
     adminPaths.push(adminPath);
@@ -746,6 +967,7 @@ function paintRegionFootprints() {
 function handlePointerDown(event) {
   if (event.target.closest(".globe-controls")) return;
   pauseAutoRotation(6200);
+  stage.classList.add("is-interacting");
   stage.setPointerCapture(event.pointerId);
   if (viewMode === "globe") {
     dragState = {
@@ -790,7 +1012,7 @@ function handlePointerMove(event) {
     if (dragState.moved) suppressMapClickUntil = performance.now() + 320;
   }
 
-  updateMap();
+  requestMapUpdate();
 }
 
 function handlePointerUp(event) {
@@ -800,6 +1022,7 @@ function handlePointerUp(event) {
     suppressMapClickUntil = performance.now() + 320;
   }
   dragState = null;
+  stage.classList.remove("is-interacting");
   pauseAutoRotation(3600);
 }
 
@@ -835,27 +1058,55 @@ function handleDocumentPointerDown(event) {
 }
 
 function autoRotate(now) {
-  if (document.hidden) {
+  if (document.hidden || prefersReducedMotion) {
+    lastAutoFrame = now;
+    lastAutoUpdateAt = now;
+    requestAnimationFrame(autoRotate);
+    return;
+  }
+
+  const shouldRotate = viewMode === "globe" && !dragState && now > pausedUntil && countryFeatures.length;
+  if (!shouldRotate) {
     lastAutoFrame = now;
     requestAnimationFrame(autoRotate);
     return;
   }
 
-  const delta = Math.min(now - lastAutoFrame, 34);
-  lastAutoFrame = now;
+  if (now - lastAutoUpdateAt < autoRotationFrameMs) {
+    requestAnimationFrame(autoRotate);
+    return;
+  }
 
-  if (viewMode === "globe" && !dragState && now > pausedUntil && countryFeatures.length) {
+  const delta = Math.min(now - lastAutoFrame, 50);
+  lastAutoFrame = now;
+  lastAutoUpdateAt = now;
+
+  if (shouldRotate) {
     const rotation = globeProjection.rotate();
     globeProjection.rotate([rotation[0] + delta * autoRotationSpeed, rotation[1], 0]);
-    updateMap();
+    requestMapUpdate();
   }
 
   requestAnimationFrame(autoRotate);
 }
 
 async function init() {
+  syncReducedMotionPreference();
+  if (typeof reducedMotionQuery.addEventListener === "function") {
+    reducedMotionQuery.addEventListener("change", syncReducedMotionPreference);
+  } else if (typeof reducedMotionQuery.addListener === "function") {
+    reducedMotionQuery.addListener(syncReducedMotionPreference);
+  }
+
+  updateMarkerLayerSize();
+  window.addEventListener("resize", updateMarkerLayerSize);
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(updateMarkerLayerSize).observe(markerLayer);
+  }
+
   markerButtons = regions.map(createMarker);
   paintRegionFootprints();
+  updateMarkers();
 
   try {
     countryFeatures = await loadCountries();
@@ -872,6 +1123,11 @@ async function init() {
   renderRegion(regions[0]);
   setZoom(1, 900);
   updateMetrics();
+  if (!isLandingEmbed && !isMobileViewport) {
+    requestIdleWork(() => {
+      queueAdminPreload(selectedRegion.countryId, { front: true });
+    }, 1800);
+  }
   requestAnimationFrame(autoRotate);
 }
 

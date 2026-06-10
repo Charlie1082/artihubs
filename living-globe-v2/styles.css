@@ -217,13 +217,12 @@ a {
 
 .map-layer,
 .marker-layer {
-  transition: opacity 220ms ease, filter 220ms ease;
+  transition: opacity 180ms ease;
 }
 
 .globe-stage.is-transitioning .map-layer,
 .globe-stage.is-transitioning .marker-layer {
-  opacity: 0.22;
-  filter: blur(7px);
+  opacity: 0.28;
 }
 
 .globe-svg:active {
@@ -252,7 +251,6 @@ a {
   fill: color-mix(in srgb, var(--country-color) 42%, rgba(34, 54, 82, 0.38));
   stroke: color-mix(in srgb, var(--country-color) 70%, rgba(255, 255, 255, 0.24));
   stroke-width: 1.08;
-  filter: url(#region-glow);
   cursor: pointer;
 }
 
@@ -260,7 +258,6 @@ a {
   fill: rgba(46, 72, 108, 0.5);
   stroke: rgba(214, 230, 255, 0.44);
   stroke-width: 1.35;
-  filter: drop-shadow(0 0 18px rgba(76, 157, 255, 0.16));
 }
 
 .country.is-hidden {
@@ -310,6 +307,13 @@ a {
   filter:
     drop-shadow(0 0 12px color-mix(in srgb, var(--admin-color) 54%, transparent))
     drop-shadow(0 0 26px color-mix(in srgb, var(--admin-color) 26%, transparent));
+}
+
+.globe-stage.is-interacting .admin-region.is-lit,
+.globe-stage.is-performance-pass .admin-region.is-lit,
+.globe-stage.is-interacting .rim,
+.globe-stage.is-performance-pass .rim {
+  filter: none;
 }
 
 .region-footprint {
@@ -368,11 +372,13 @@ a {
 
 .marker {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1px solid color-mix(in srgb, var(--marker-color) 82%, #ffffff);
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--marker-color) 92%, #ffffff);
+  background: transparent;
   color: #061016;
   font: inherit;
   font-size: 0;
@@ -381,11 +387,21 @@ a {
   display: grid;
   place-items: center;
   padding: 0;
-  translate: -50% -50%;
+  transform: translate3d(var(--marker-x, -100px), var(--marker-y, -100px), 0) translate(-50%, -50%);
   cursor: pointer;
-  box-shadow: 0 0 16px color-mix(in srgb, var(--marker-color) 82%, transparent);
   pointer-events: auto;
-  transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  transition: opacity 160ms ease, transform 160ms ease;
+  will-change: transform, opacity;
+}
+
+.marker-dot {
+  display: block;
+  width: var(--marker-dot-size, 10px);
+  height: var(--marker-dot-size, 10px);
+  border: 1px solid color-mix(in srgb, var(--marker-color) 82%, #ffffff);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--marker-color) 92%, #ffffff);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--marker-color) 82%, transparent);
   animation: marker-twinkle 2.6s ease-in-out infinite;
 }
 
@@ -396,13 +412,30 @@ a {
 
 .marker:hover,
 .marker.is-selected {
+  z-index: 2;
+}
+
+.marker:hover .marker-dot,
+.marker.is-selected .marker-dot {
+  animation: none;
   transform: scale(1.35);
-  box-shadow: 0 0 28px color-mix(in srgb, var(--marker-color) 88%, transparent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--marker-color) 88%, transparent);
 }
 
 .marker.is-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.globe-stage.is-interacting .marker-dot,
+.globe-stage.is-transitioning .marker-dot,
+.globe-stage.is-performance-pass .marker-dot,
+.globe-stage.prefers-reduced-motion .marker-dot {
+  animation: none;
+}
+
+.globe-stage.prefers-reduced-motion .region-footprint {
+  animation: none;
 }
 
 .globe-hint {
@@ -534,12 +567,12 @@ a {
 @keyframes marker-twinkle {
   0%, 100% {
     transform: scale(0.72);
-    filter: brightness(1);
+    opacity: 0.78;
   }
 
   48% {
     transform: scale(1.18);
-    filter: brightness(1.5);
+    opacity: 1;
   }
 }
 
@@ -618,8 +651,9 @@ a {
   }
 
   .marker {
-    width: 9px;
-    height: 9px;
+    width: 44px;
+    height: 44px;
+    --marker-dot-size: 9px;
   }
 }
 
@@ -690,12 +724,11 @@ html.is-embedded-globe .globe-stage {
 }
 
 html.is-embedded-globe .globe-stage::after {
-  box-shadow:
-    0 0 92px rgba(76, 157, 255, 0.16),
-    inset -34px -40px 84px rgba(0, 0, 0, 0.78);
+  display: none;
 }
 
 html.is-embedded-globe .marker {
-  width: 8px;
-  height: 8px;
+  width: 44px;
+  height: 44px;
+  --marker-dot-size: 8px;
 }
