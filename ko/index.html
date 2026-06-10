@@ -23,16 +23,45 @@
           <a href="../signup/">가입</a>
           <a class="language-link" href="../">English</a>
         </div>
+        <div class="mobile-nav-actions">
+          <a class="mobile-join" href="../signup/">가입</a>
+          <details class="mobile-menu">
+            <summary aria-label="메뉴 열기">
+              <span></span>
+              <span></span>
+              <span></span>
+            </summary>
+            <div class="mobile-menu-panel" aria-label="Mobile navigation">
+              <a href="../living-globe-v2/">리빙 글로브</a>
+              <a href="../explore/">허브 탐색</a>
+              <a href="../for-makers/">메이커</a>
+              <a href="../for-seekers/">시커</a>
+              <a href="../login/">로그인</a>
+              <a class="language-link" href="../">English</a>
+            </div>
+          </details>
+        </div>
       </nav>
 
       <section class="home-hero" aria-labelledby="home-title">
         <div class="home-copy">
-          <p class="eyebrow">Borderless maker discovery</p>
-          <h1 id="home-title">필요한 역량을 가진 메이커를 발견하세요.</h1>
-          <p class="lede">Artihubs는 소셜 알고리즘만으로는 찾기 어려운 독립 발명가, 1인 제조업자, 소프트웨어 빌더, 소규모 전문 팀을 역량과 지역, 목적 중심으로 연결하는 리빙 디스커버리 플랫폼입니다.</p>
-          <div class="actions">
+          <p class="eyebrow home-desktop-eyebrow">Borderless maker discovery</p>
+          <p class="eyebrow home-mobile-eyebrow">리빙 메이커 시그널</p>
+          <h1 id="home-title">
+            <span class="home-desktop-title">필요한 역량을 가진 메이커를 발견하세요.</span>
+            <span class="home-mobile-title">역량이 살아있는 곳을 보세요.</span>
+          </h1>
+          <p class="lede">
+            <span class="home-desktop-copy">Artihubs는 소셜 알고리즘만으로는 찾기 어려운 독립 발명가, 1인 제조업자, 소프트웨어 빌더, 소규모 전문 팀을 역량과 지역, 목적 중심으로 연결하는 리빙 디스커버리 플랫폼입니다.</span>
+            <span class="home-mobile-copy">승인된 메이커마다 지역 단위의 안전한 신호가 Artihubs 발견 지도에 추가됩니다.</span>
+          </p>
+          <div class="actions home-desktop-actions">
             <a class="button primary" href="../living-globe-v2/">리빙 글로브 보기</a>
             <a class="button secondary" href="../explore/">메이커 허브 탐색</a>
+          </div>
+          <div class="actions home-mobile-actions">
+            <a class="button primary" href="../living-globe-v2/">글로브 탐색</a>
+            <a class="button secondary" href="../explore/">메이커 허브 검색</a>
           </div>
           <dl class="home-stats" aria-label="Artihubs prototype signals">
             <div>
@@ -48,13 +77,23 @@
               <dd>새로운 메이커가 등록될 때마다 실제 지역이 Artihubs 지도 위에서 밝아집니다.</dd>
             </div>
           </dl>
+          <dl class="home-mobile-trust" aria-label="Artihubs mobile trust signals">
+            <div><dt>지역</dt><dd>국가 단위</dd></div>
+            <div><dt>프로필</dt><dd>검토 후 공개</dd></div>
+            <div><dt>검색</dt><dd>역량 중심</dd></div>
+          </dl>
         </div>
 
         <div class="home-globe" aria-label="Artihubs living globe preview">
+          <div class="home-globe-fallback" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
           <iframe
             class="home-globe-frame"
             title="Artihubs living globe preview"
-            src="/living-globe-v2/?embed=landing&v=20260609-safe-frame"
+            src="/living-globe-v2/?embed=landing&v=20260610-rq0005"
             loading="eager"
             tabindex="-1"
           ></iframe>

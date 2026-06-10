@@ -23,16 +23,45 @@
           <a href="./signup/">Join</a>
           <a class="language-link" href="./ko/" lang="ko">한국어</a>
         </div>
+        <div class="mobile-nav-actions">
+          <a class="mobile-join" href="./signup/">Join</a>
+          <details class="mobile-menu">
+            <summary aria-label="Open navigation">
+              <span></span>
+              <span></span>
+              <span></span>
+            </summary>
+            <div class="mobile-menu-panel" aria-label="Mobile navigation">
+              <a href="./living-globe-v2/">Living Globe</a>
+              <a href="./explore/">Explore Hubs</a>
+              <a href="./for-makers/">For Makers</a>
+              <a href="./for-seekers/">For Seekers</a>
+              <a href="./login/">Sign in</a>
+              <a class="language-link" href="./ko/" lang="ko">한국어</a>
+            </div>
+          </details>
+        </div>
       </nav>
 
       <section class="home-hero" aria-labelledby="home-title">
         <div class="home-copy">
-          <h1 id="home-title">Beyond the Algorithm.</h1>
-          <p class="lede">Your work deserves discovery beyond the algorithm. Artihubs helps makers show what they can build, and helps seekers find real capabilities by field, country, and region.</p>
-          <div class="actions">
+          <p class="eyebrow home-mobile-eyebrow">Living Maker Signal</p>
+          <h1 id="home-title">
+            <span class="home-desktop-title">Beyond the Algorithm.</span>
+            <span class="home-mobile-title">See where capability lives.</span>
+          </h1>
+          <p class="lede">
+            <span class="home-desktop-copy">Your work deserves discovery beyond the algorithm. Artihubs helps makers show what they can build, and helps seekers find real capabilities by field, country, and region.</span>
+            <span class="home-mobile-copy">Each approved maker adds a region-safe signal to Artihubs discovery.</span>
+          </p>
+          <div class="actions home-desktop-actions">
             <a class="button primary" href="./explore/">Explore maker hubs</a>
             <a class="button secondary" href="./living-globe-v2/">Enter the living globe</a>
             <a class="button secondary" href="./signup/">Join as a maker</a>
+          </div>
+          <div class="actions home-mobile-actions">
+            <a class="button primary" href="./living-globe-v2/">Explore the globe</a>
+            <a class="button secondary" href="./explore/">Search maker hubs</a>
           </div>
           <dl class="home-stats" aria-label="Artihubs prototype signals">
             <div>
@@ -48,17 +77,34 @@
               <dd>Signup starts a private workspace. Public Maker profiles appear only after review.</dd>
             </div>
           </dl>
+          <dl class="home-mobile-trust" aria-label="Artihubs mobile trust signals">
+            <div><dt>Region</dt><dd>country only</dd></div>
+            <div><dt>Profile</dt><dd>reviewed</dd></div>
+            <div><dt>Search</dt><dd>capability</dd></div>
+          </dl>
         </div>
 
         <div class="home-globe" aria-label="Artihubs living globe preview">
+          <div class="home-globe-fallback" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
           <iframe
             class="home-globe-frame"
             title="Artihubs living globe preview"
-            src="/living-globe-v2/?embed=landing&v=20260609-safe-frame"
+            src="/living-globe-v2/?embed=landing&v=20260610-rq0005"
             loading="eager"
             tabindex="-1"
           ></iframe>
         </div>
+      </section>
+
+      <section class="home-signal-strip" aria-label="Artihubs capability signal sample">
+        <div><span>Field</span><strong>Robotics fixtures</strong></div>
+        <div><span>Region</span><strong>Korea / Seoul</strong></div>
+        <div><span>Review</span><strong>Profile gated</strong></div>
+        <div><span>Request</span><strong>Sample-ready</strong></div>
       </section>
 
       <section class="home-band" aria-labelledby="paths-title">
@@ -87,6 +133,46 @@
             <a class="button secondary" href="./explore/">Open directory</a>
           </article>
         </div>
+      </section>
+
+      <section class="home-band home-product-preview" aria-labelledby="product-preview-title">
+        <div class="home-section-head">
+          <p class="eyebrow">Product surfaces</p>
+          <h2 id="product-preview-title">Signals become working records.</h2>
+          <p>Artihubs keeps discovery grounded in capability, region-safe identity, review status, and structured requests.</p>
+        </div>
+        <div class="home-preview-grid">
+          <article class="artifact-panel maker-signal-card">
+            <div class="artifact-panel-head">
+              <span>Maker signal</span>
+              <strong>Quiet Forge Lab</strong>
+            </div>
+            <dl class="artifact-list">
+              <div><dt>Capability</dt><dd>sensor housings, small fixtures</dd></div>
+              <div><dt>Visible region</dt><dd>Korea / Seoul</dd></div>
+              <div><dt>Status</dt><dd>reviewed public signal</dd></div>
+            </dl>
+            <div class="signal-meter" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          </article>
+          <article class="artifact-panel request-blueprint-card">
+            <div class="artifact-panel-head">
+              <span>Seeker request</span>
+              <strong>Waterproof sensor housing</strong>
+            </div>
+            <dl class="artifact-list">
+              <div><dt>Need</dt><dd>short-run prototype enclosure</dd></div>
+              <div><dt>Constraints</dt><dd>marine sealing, sample shipping</dd></div>
+              <div><dt>Route</dt><dd>hardware prototype makers</dd></div>
+            </dl>
+            <div class="blueprint-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+          </article>
+        </div>
+        <ol class="home-review-timeline" aria-label="Artihubs review gate path">
+          <li><span>01</span><strong>Private draft</strong></li>
+          <li><span>02</span><strong>Review gate</strong></li>
+          <li><span>03</span><strong>Public signal</strong></li>
+          <li><span>04</span><strong>Structured inquiry</strong></li>
+        </ol>
       </section>
 
       <section class="home-band home-flow" aria-labelledby="flow-title">
