@@ -9,6 +9,7 @@ const CLAUDE_SEARCH_MODEL = "claude-sonnet-4-6";
 const MAX_QUERY_LENGTH = 700;
 const MAX_BODY_BYTES = 5_000;
 const MAX_MATCHES = 8;
+const FALLBACK_MODES = new Set(["degraded", "strict"]);
 let cachedMakers = null;
 let cachedPublicProfiles = null;
 let cachedPublicProfilesAt = 0;
@@ -91,6 +92,11 @@ function relevanceScore(value, defaultScore = 0.82) {
   return Math.max(0, Math.min(1, score));
 }
 
+function searchFallbackMode() {
+  const mode = String(process.env.SEARCH_FALLBACK_MODE || "degraded").trim().toLowerCase();
+  return FALLBACK_MODES.has(mode) ? mode : "degraded";
+}
+
 function extractJson(text) {
   const trimmed = String(text || "").trim();
   try {
@@ -115,7 +121,7 @@ function mergeClaudeMatches(makers, claudeMatches) {
       ...maker,
       rankSource: "claude",
       relevance: relevanceScore(match.relevance),
-      reason: cleanText(match.reason || "Claude matched this maker to the request.", 320),
+      reason: cleanText(match.reason || "Artihubs matched this maker to the request.", 320),
       reasonKo: cleanText(match.reasonKo, 240),
       suggestedIntro: cleanText(match.suggestedIntro, 260),
       suggestedIntroKo: cleanText(match.suggestedIntroKo, 220)
@@ -227,6 +233,58 @@ async function claudeRank({ apiKey, query, makers }) {
   };
 }
 
+function unavailablePayload(profileSource) {
+  return {
+    mode: "unavailable",
+    rankSource: "unavailable",
+    degraded: false,
+    profileSource,
+    summary: "Artihubs search is temporarily unavailable.",
+    summaryKo: "",
+    matches: []
+  };
+}
+
+function fallbackPayload({ query, makers, profileSource, summary, summaryKo = "" }) {
+  return {
+    mode: "fallback",
+    rankSource: "fallback",
+    degraded: true,
+    profileSource,
+    summary,
+    summaryKo,
+    matches: fallbackRank({ query, makers })
+  };
+}
+
+async function sendFallbackResponse({ response, requestId: id, query, makers, profileSource, startedAt, summary, summaryKo = "" }) {
+  const payload = fallbackPayload({ query, makers, profileSource, summary, summaryKo });
+  await writeSearchQueryLog({
+    query,
+    matches: payload.matches,
+    rankSource: payload.rankSource,
+    degraded: payload.degraded,
+    latencyMs: Date.now() - startedAt
+  });
+  sendJson(response, 200, {
+    ok: true,
+    ...payload,
+    data: payload,
+    requestId: id
+  });
+}
+
+function sendUnavailableResponse({ response, requestId: id, profileSource }) {
+  const payload = unavailablePayload(profileSource);
+  sendJson(response, 503, {
+    ok: false,
+    error: publicError("SEARCH_UNAVAILABLE", "Artihubs search is temporarily unavailable."),
+    ...payload,
+    data: payload,
+    requestId: id
+  });
+}
+
 module.exports = async function handler(request, response) {
   const id = requestId();
   const startedAt = Date.now();
@@ -316,28 +374,23 @@ module.exports = async function handler(request, response) {
     return;
   }
 
+  const fallbackMode = searchFallbackMode();
+
   if (!apiKey) {
-    const fallbackPayload = {
-      mode: "fallback",
-      rankSource: "fallback",
-      degraded: true,
-      profileSource,
-      summary: "AI search is not configured, so Artihubs used local prototype ranking.",
-      summaryKo: hasKorean(query) ? "AI 검색 설정이 없어 로컬 프로토타입 랭킹을 사용했습니다." : "",
-      matches: fallbackRank({ query, makers })
-    };
-    await writeSearchQueryLog({
+    if (fallbackMode === "strict") {
+      sendUnavailableResponse({ response, requestId: id, profileSource });
+      return;
+    }
+
+    await sendFallbackResponse({
+      response,
+      requestId: id,
       query,
-      matches: fallbackPayload.matches,
-      rankSource: fallbackPayload.rankSource,
-      degraded: fallbackPayload.degraded,
-      latencyMs: Date.now() - startedAt
-    });
-    sendJson(response, 200, {
-      ok: true,
-      ...fallbackPayload,
-      data: fallbackPayload,
-      requestId: id
+      makers,
+      profileSource,
+      startedAt,
+      summary: "AI search is not configured, so Artihubs used local prototype ranking.",
+      summaryKo: hasKorean(query) ? "AI 검색 설정이 없어 로컬 프로토타입 랭킹을 사용했습니다." : ""
     });
     return;
   }
@@ -355,27 +408,20 @@ module.exports = async function handler(request, response) {
     });
     sendJson(response, 200, { ok: true, ...claudePayload, data: claudePayload, requestId: id });
   } catch (error) {
-    const fallbackPayload = {
-      mode: "fallback",
-      rankSource: "fallback",
-      degraded: true,
-      profileSource,
-      summary: "AI search is temporarily unavailable, so Artihubs used local prototype ranking.",
-      summaryKo: hasKorean(query) ? "AI 검색이 일시적으로 unavailable 상태라 로컬 프로토타입 랭킹을 사용했습니다." : "",
-      matches: fallbackRank({ query, makers })
-    };
-    await writeSearchQueryLog({
+    if (fallbackMode === "strict") {
+      sendUnavailableResponse({ response, requestId: id, profileSource });
+      return;
+    }
+
+    await sendFallbackResponse({
+      response,
+      requestId: id,
       query,
-      matches: fallbackPayload.matches,
-      rankSource: fallbackPayload.rankSource,
-      degraded: fallbackPayload.degraded,
-      latencyMs: Date.now() - startedAt
-    });
-    sendJson(response, 200, {
-      ok: true,
-      ...fallbackPayload,
-      data: fallbackPayload,
-      requestId: id
+      makers,
+      profileSource,
+      startedAt,
+      summary: "AI search is temporarily unavailable, so Artihubs used local prototype ranking.",
+      summaryKo: hasKorean(query) ? "AI 검색이 일시적으로 unavailable 상태라 로컬 프로토타입 랭킹을 사용했습니다." : ""
     });
   }
 };

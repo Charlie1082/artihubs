@@ -69,6 +69,9 @@ function assert(condition, message) {
 }
 
 const originalFetch = globalThis.fetch;
+delete process.env.ANTHROPIC_API_KEY;
+delete process.env.CLAUDE_API_KEY;
+delete process.env.SEARCH_FALLBACK_MODE;
 
 const intakeResult = await invoke(intake, {
   type: "maker",
@@ -121,6 +124,90 @@ const v1SearchResult = await invoke(v1Search, {
 
 assert(v1SearchResult.statusCode === 200, "v1 search wrapper should call search handler");
 assert(v1SearchResult.body.rankSource === "fallback", "v1 search should preserve fallback behavior");
+
+process.env.SEARCH_FALLBACK_MODE = "degraded";
+process.env.ANTHROPIC_API_KEY = "test_anthropic_key";
+globalThis.fetch = async (url) => {
+  if (String(url) === "https://api.anthropic.com/v1/messages") {
+    return {
+      ok: false,
+      status: 503,
+      async json() {
+        return {};
+      }
+    };
+  }
+
+  throw new Error(`unexpected degraded failure search fetch target: ${url}`);
+};
+
+const degradedFailureSearchResult = await invoke(
+  search,
+  {
+    query: "repairable product fixtures near Berlin"
+  },
+  { "x-forwarded-for": "127.0.0.12" }
+);
+
+assert(degradedFailureSearchResult.statusCode === 200, "degraded search mode should return fallback when AI ranking fails");
+assert(degradedFailureSearchResult.body.ok === true, "degraded failure fallback should return ok=true");
+assert(degradedFailureSearchResult.body.rankSource === "fallback", "degraded failure should use fallback rankSource");
+assert(degradedFailureSearchResult.body.degraded === true, "degraded failure should mark degraded=true");
+assert(!/claude|sonnet/i.test(degradedFailureSearchResult.body.summary || ""), "degraded summary must not expose model names");
+
+globalThis.fetch = originalFetch;
+delete process.env.ANTHROPIC_API_KEY;
+delete process.env.SEARCH_FALLBACK_MODE;
+
+process.env.SEARCH_FALLBACK_MODE = "strict";
+const strictMissingKeySearchResult = await invoke(
+  search,
+  {
+    query: "repairable product fixtures near Berlin"
+  },
+  { "x-forwarded-for": "127.0.0.13" }
+);
+
+assert(strictMissingKeySearchResult.statusCode === 503, "strict search mode should fail closed when AI key is absent");
+assert(strictMissingKeySearchResult.body.ok === false, "strict missing-key search should return ok=false");
+assert(strictMissingKeySearchResult.body.error?.code === "SEARCH_UNAVAILABLE", "strict missing-key search should use public unavailable error");
+assert(strictMissingKeySearchResult.body.rankSource === "unavailable", "strict missing-key search should not report fallback rankSource");
+assert(strictMissingKeySearchResult.body.degraded === false, "strict missing-key search should not mark degraded fallback");
+assert(Array.isArray(strictMissingKeySearchResult.body.matches), "strict missing-key search should include an empty matches array");
+assert(strictMissingKeySearchResult.body.matches.length === 0, "strict missing-key search should not return local fallback matches");
+assert(!/claude|sonnet/i.test(strictMissingKeySearchResult.body.error?.message || ""), "strict public error must not expose model names");
+
+process.env.ANTHROPIC_API_KEY = "test_anthropic_key";
+globalThis.fetch = async (url) => {
+  if (String(url) === "https://api.anthropic.com/v1/messages") {
+    return {
+      ok: false,
+      status: 503,
+      async json() {
+        return {};
+      }
+    };
+  }
+
+  throw new Error(`unexpected strict failure search fetch target: ${url}`);
+};
+
+const strictFailureSearchResult = await invoke(
+  search,
+  {
+    query: "repairable product fixtures near Berlin"
+  },
+  { "x-forwarded-for": "127.0.0.14" }
+);
+
+assert(strictFailureSearchResult.statusCode === 503, "strict search mode should fail closed when AI ranking fails");
+assert(strictFailureSearchResult.body.error?.code === "SEARCH_UNAVAILABLE", "strict failure search should use public unavailable error");
+assert(strictFailureSearchResult.body.matches.length === 0, "strict failure search should not return fallback matches");
+assert(!/claude|sonnet/i.test(strictFailureSearchResult.body.summary || ""), "strict summary must not expose model names");
+
+globalThis.fetch = originalFetch;
+delete process.env.ANTHROPIC_API_KEY;
+delete process.env.SEARCH_FALLBACK_MODE;
 
 const v1MeResult = await invokeGet(v1Me, { "x-forwarded-for": "127.0.0.6" });
 
@@ -1948,6 +2035,9 @@ delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 delete process.env.SUPABASE_SECRET_KEY;
 delete process.env.SEARCH_QUERY_LOGGING_ENABLED;
 delete process.env.SEARCH_QUERY_HASH_SECRET;
+delete process.env.SEARCH_FALLBACK_MODE;
+delete process.env.ANTHROPIC_API_KEY;
+delete process.env.CLAUDE_API_KEY;
 delete process.env.INTAKE_TABLE;
 delete process.env.RATE_LIMIT_MODE;
 delete process.env.SEARCH_PROFILE_SOURCE;
@@ -1966,6 +2056,12 @@ console.log(
         rankSource: searchResult.body.rankSource,
         degraded: searchResult.body.degraded,
         matches: searchResult.body.matches.length
+      },
+      searchFallbackModes: {
+        degradedFailureStatusCode: degradedFailureSearchResult.statusCode,
+        strictMissingKeyStatusCode: strictMissingKeySearchResult.statusCode,
+        strictFailureStatusCode: strictFailureSearchResult.statusCode,
+        strictErrorCode: strictFailureSearchResult.body.error.code
       },
       v1: {
         intakeStatusCode: v1IntakeResult.statusCode,

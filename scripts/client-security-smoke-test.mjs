@@ -19,6 +19,7 @@ const serverOnlyTokens = [
   "RATE_LIMIT_MODE",
   "INTAKE_TABLE",
   "SEARCH_PROFILE_SOURCE",
+  "SEARCH_FALLBACK_MODE",
   "ALLOWED_ORIGINS"
 ];
 const legacyApiPaths = ["/api/intake", "/api/search"];

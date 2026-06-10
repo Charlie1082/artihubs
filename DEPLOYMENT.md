@@ -40,6 +40,7 @@ Set these in Vercel Project Settings -> Environment Variables:
 - `ALLOWED_ORIGINS=https://artihubs.com,https://www.artihubs.com`
 - `ADMIN_ALLOWED_ORIGINS=` unless Admin Console is hosted on a separate trusted origin
 - `AUTH_PUBLIC_AUTH_ENABLED=false` until non-production Auth, SMTP, RLS, and `/api/v1/me` validation pass
+- `SEARCH_FALLBACK_MODE=degraded`
 - `TURNSTILE_SECRET_KEY` after the Cloudflare public site key is configured on form pages
 - `TURNSTILE_REQUIRED=false` until the deployed form submits a verified Turnstile client token
 - `AUDIT_IP_HASH_SECRET` later, before operational admin activity logging. Use at least 32 random characters.
@@ -149,7 +150,13 @@ Browser origin guard:
 
 For natural-language Explore Hubs search, set the Claude key as `ANTHROPIC_API_KEY`. The deployed search API also accepts `CLAUDE_API_KEY`, but `ANTHROPIC_API_KEY` is preferred. The model is fixed in code to `claude-sonnet-4-6`.
 
-If the Claude key is absent or Claude search fails, Explore Hubs returns local prototype ranking with `rankSource: "fallback"` and `degraded: true`.
+Search fallback mode:
+
+- Production default: `SEARCH_FALLBACK_MODE=degraded`.
+- `degraded`: if the Claude key is absent or AI ranking fails, Explore Hubs returns local prototype ranking with `rankSource: "fallback"` and `degraded: true`.
+- `strict`: if the Claude key is absent or AI ranking fails, Explore Hubs returns `503 SEARCH_UNAVAILABLE` with no local fallback matches. Use this only for Claude-only dry tests.
+- Do not change Vercel environment values directly from Engineering automation; propose the value and wait for charlie님 approval for account-level settings.
+- User-facing strings must refer to "Artihubs" or "AI search", not model/vendor names.
 
 Search profile source:
 

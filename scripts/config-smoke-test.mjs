@@ -36,6 +36,7 @@ fs.writeFileSync(
     "SUPABASE_URL=https://your-project-ref.supabase.co",
     "SUPABASE_SERVICE_ROLE_KEY=",
     "ANTHROPIC_API_KEY=replace-with-vercel-environment-secret",
+    "SEARCH_FALLBACK_MODE=unsafe",
     "SEARCH_PROFILE_SOURCE=database",
     "SEARCH_QUERY_LOGGING_ENABLED=true",
     "SEARCH_QUERY_HASH_SECRET=short",
@@ -53,6 +54,7 @@ fs.writeFileSync(
 const badResult = run([badEnv]);
 assert(badResult.status === 1, "unsafe env combinations should fail validation");
 assert(badResult.stderr.includes("INTAKE_TABLE must be one of"), "env validation should reject unsafe intake table");
+assert(badResult.stderr.includes("SEARCH_FALLBACK_MODE must be one of"), "env validation should reject unsafe search fallback mode");
 assert(badResult.stderr.includes("SEARCH_PROFILE_SOURCE=database requires"), "env validation should reject database search without Supabase config");
 assert(badResult.stderr.includes("RATE_LIMIT_MODE=supabase requires a configured Supabase URL and server key"), "env validation should reject durable rate limit without Supabase config");
 assert(badResult.stderr.includes("SEARCH_QUERY_LOGGING_ENABLED=true requires a configured Supabase URL and server key"), "env validation should reject search logging without Supabase config");

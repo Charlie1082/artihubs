@@ -39,6 +39,7 @@ This folder is prepared for Vercel.
 - `/api/v1/admin/privacy-redactions.js` calls approved privacy redaction RPC helpers only for server-validated `admin` or `super_admin` users.
 - `/api/intake` and `/api/search` remain compatibility paths through Vercel rewrites to the v1 handlers.
 - Supabase and Claude credentials must be set only in Vercel environment variables.
+- `SEARCH_FALLBACK_MODE=degraded` is the production default for local prototype ranking when AI ranking is unavailable; `strict` is reserved for Claude-only dry tests and returns `SEARCH_UNAVAILABLE` instead of fallback matches.
 - Optional search query logging is disabled by default and stores only redacted previews plus HMAC hashes when enabled.
 - See `DEPLOYMENT.md`.
 

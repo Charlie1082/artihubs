@@ -12,6 +12,7 @@ const envFile = envFileArg ? path.resolve(envFileArg) : defaultEnvFile;
 const allowed = {
   INTAKE_TABLE: new Set(["public_intake", "intake_submissions"]),
   RATE_LIMIT_MODE: new Set(["memory", "supabase"]),
+  SEARCH_FALLBACK_MODE: new Set(["degraded", "strict"]),
   SEARCH_PROFILE_SOURCE: new Set(["local", "database"]),
   SEARCH_QUERY_LOGGING_ENABLED: new Set(["true", "false"]),
   TURNSTILE_REQUIRED: new Set(["true", "false"]),
@@ -68,7 +69,7 @@ const env = parseEnv(fs.readFileSync(envFile, "utf8"));
 const errors = [];
 const warnings = [];
 
-["SUPABASE_URL", "ANTHROPIC_API_KEY", "SEARCH_PROFILE_SOURCE", "SEARCH_QUERY_LOGGING_ENABLED", "INTAKE_TABLE", "RATE_LIMIT_MODE", "TURNSTILE_REQUIRED", "AUTH_PUBLIC_AUTH_ENABLED"].forEach((key) => {
+["SUPABASE_URL", "ANTHROPIC_API_KEY", "SEARCH_FALLBACK_MODE", "SEARCH_PROFILE_SOURCE", "SEARCH_QUERY_LOGGING_ENABLED", "INTAKE_TABLE", "RATE_LIMIT_MODE", "TURNSTILE_REQUIRED", "AUTH_PUBLIC_AUTH_ENABLED"].forEach((key) => {
   assert(Object.prototype.hasOwnProperty.call(env, key), `${key} is missing.`, errors);
 });
 

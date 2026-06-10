@@ -79,7 +79,7 @@ function renderMatchRow(maker) {
         <p class="eyebrow">${escapeHtml(maker.country)} / ${escapeHtml(maker.region)} · ${sourceLabel} · ${relevance}</p>
         <h3>${escapeHtml(maker.name)}</h3>
         <p><strong>${escapeHtml(maker.capability)}</strong> · ${escapeHtml(maker.summary)}</p>
-        <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || "Claude matched this maker to the request.")}</p>
+        <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || "Artihubs matched this maker to the request.")}</p>
         ${koreanNote}
       </div>
       <button class="button secondary" type="button" data-intro="${introValue}">Ask</button>
