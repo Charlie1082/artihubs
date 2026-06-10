@@ -90,6 +90,28 @@
             <span></span>
             <span></span>
           </div>
+          <div class="home-orbit" aria-hidden="true">
+            <svg class="home-orbit-svg" viewBox="0 0 720 720" focusable="false">
+              <defs>
+                <linearGradient id="home-orbit-sweep" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="rgba(72, 229, 255, 0)" />
+                  <stop offset="46%" stop-color="rgba(72, 229, 255, 0.88)" />
+                  <stop offset="100%" stop-color="rgba(167, 139, 250, 0)" />
+                </linearGradient>
+                <filter id="home-orbit-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="3.2" />
+                </filter>
+              </defs>
+              <path class="home-orbit-trace home-orbit-trace-a" d="M 96 252 C 246 144 466 130 636 232" />
+              <path class="home-orbit-flow home-orbit-flow-a" pathLength="100" d="M 96 252 C 246 144 466 130 636 232" />
+              <path class="home-orbit-trace home-orbit-trace-b" d="M 462 114 C 588 166 654 278 640 394" />
+              <path class="home-orbit-flow home-orbit-flow-b" pathLength="100" d="M 462 114 C 588 166 654 278 640 394" />
+              <path class="home-horizon-scan" d="M 518 126 C 656 232 674 416 586 548" />
+              <circle class="home-orbit-glint home-orbit-glint-a" cx="505" cy="276" r="5" />
+              <circle class="home-orbit-glint home-orbit-glint-b" cx="302" cy="388" r="4.5" />
+              <circle class="home-orbit-glint home-orbit-glint-c" cx="548" cy="176" r="4" />
+            </svg>
+          </div>
           <iframe
             class="home-globe-frame"
             title="Artihubs living globe preview"
