@@ -1879,138 +1879,20 @@ button:disabled,
 
 .home-orbit {
   position: absolute;
-  inset: 2% 2% 3% 2%;
+  inset: -6% -8%;
   z-index: 2;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
   opacity: 0.94;
   mix-blend-mode: screen;
-  contain: paint;
-}
-
-.home-orbit-svg {
-  display: none;
-  width: 100%;
-  height: 100%;
+  contain: layout paint;
 }
 
 .home-orbit-canvas {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.home-orbit-arc,
-.home-orbit-limb-trail {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.home-orbit-arc {
-  stroke: rgba(176, 242, 255, 0.34);
-  stroke-width: 1.28;
-  stroke-dasharray: 72 28 16 68;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 3px rgba(72, 229, 255, 0.2));
-}
-
-.home-orbit-arc-a {
-  stroke-dashoffset: 18;
-}
-
-.home-orbit-arc-b {
-  stroke: rgba(176, 242, 255, 0.28);
-  stroke-dasharray: 58 34 14 86;
-  stroke-dashoffset: -44;
-  opacity: 0.74;
-}
-
-.home-orbit-arc-c {
-  stroke: rgba(176, 242, 255, 0.2);
-  stroke-dasharray: 74 54 10 110;
-  stroke-dashoffset: 86;
-  opacity: 0.48;
-}
-
-.home-orbit-limb-trail {
-  stroke: url("#home-orbit-amber");
-  stroke-width: 1.45;
-  stroke-dasharray: 7 93;
-  stroke-dashoffset: 100;
-  opacity: 0;
-  filter: url("#home-orbit-soft-glow");
-  animation: home-orbit-limb-trail 21s ease-in-out infinite;
-}
-
-.home-orbit-satellite {
-  fill: rgba(176, 242, 255, 0.78);
-  filter: drop-shadow(0 0 8px rgba(72, 229, 255, 0.34));
-}
-
-.home-orbit-satellite-e,
-.home-orbit-satellite-f {
-  fill: rgba(155, 214, 255, 0.58);
-  filter: drop-shadow(0 0 6px rgba(72, 229, 255, 0.22));
-}
-
-.home-orbit-hero-pass {
-  fill: rgba(255, 209, 102, 0.88);
-  filter: drop-shadow(0 0 9px rgba(255, 209, 102, 0.4));
-}
-
-.home-orbit-static-glint {
-  fill: rgba(176, 242, 255, 0.52);
-  opacity: 0.22;
-  filter: drop-shadow(0 0 6px rgba(72, 229, 255, 0.24));
-}
-
-@keyframes home-orbit-limb-trail {
-  0%,
-  61%,
-  82%,
-  100% {
-    opacity: 0;
-    stroke-dashoffset: 96;
-  }
-
-  68% {
-    opacity: 0.58;
-    stroke-dashoffset: 62;
-  }
-
-  74% {
-    opacity: 0.16;
-    stroke-dashoffset: 38;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-orbit-limb-trail {
-    animation: none;
-    opacity: 0;
-  }
-
-  .home-orbit-satellite {
-    display: none;
-  }
-
-  .home-orbit-arc {
-    stroke-dasharray: 76 40 12 96;
-    opacity: 0.78;
-  }
-
-  .home-orbit-arc-b {
-    opacity: 0.58;
-  }
-
-  .home-orbit-arc-c {
-    opacity: 0.36;
-  }
-
-  .home-orbit-static-glint {
-    opacity: 0.46;
-  }
+  contain: strict;
 }
 
 .home-signal-strip {
@@ -2386,36 +2268,8 @@ button:disabled,
   }
 
   .home-orbit {
-    inset: 1% 0 4%;
+    inset: -7% -10%;
     opacity: 0.94;
-  }
-
-  .home-orbit-arc-c,
-  .home-orbit-satellite-e,
-  .home-orbit-satellite-f,
-  .home-orbit-static-glint-c,
-  .home-orbit-static-glint-d {
-    display: none;
-  }
-
-  .home-orbit-arc {
-    stroke-width: 1.08;
-    stroke-dasharray: 144 28 32 58;
-    opacity: 0.84;
-  }
-
-  .home-orbit-arc-b {
-    stroke-dasharray: 112 28 30 72;
-    opacity: 0.66;
-  }
-
-  .home-orbit-satellite {
-    r: 2px;
-  }
-
-  .home-orbit-limb-trail {
-    stroke-width: 1.1;
-    animation-duration: 24s;
   }
 
   .home-globe-fallback {

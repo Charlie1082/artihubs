@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/ko-parity-check.mjs"]
   },
   {
+    name: "orbit-geometry",
+    cwd: projectRoot,
+    args: ["scripts/orbit-geometry-check.mjs"]
+  },
+  {
     name: "env",
     cwd: projectRoot,
     args: ["scripts/check-env.mjs"]
