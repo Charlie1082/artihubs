@@ -166,9 +166,28 @@ async function startChrome() {
   chrome.stderr.on("data", (chunk) => {
     stderr += chunk.toString();
   });
-  cleanupTasks.push(() => {
-    if (!chrome.killed) chrome.kill("SIGTERM");
-  });
+  cleanupTasks.push(() => new Promise((resolve) => {
+    if (chrome.exitCode !== null || chrome.signalCode !== null) {
+      fs.rmSync(userDataDir, { force: true, recursive: true });
+      resolve();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (chrome.exitCode === null && chrome.signalCode === null) {
+        chrome.kill("SIGKILL");
+      }
+      fs.rmSync(userDataDir, { force: true, recursive: true });
+      resolve();
+    }, 2000);
+
+    chrome.once("exit", () => {
+      clearTimeout(timer);
+      fs.rmSync(userDataDir, { force: true, recursive: true });
+      resolve();
+    });
+    chrome.kill("SIGTERM");
+  }));
 
   try {
     await waitForJson(`http://127.0.0.1:${port}/json/version`, 10000);
