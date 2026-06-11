@@ -131,8 +131,8 @@
     return { dpr, width: rect.width, height: rect.height };
   };
 
-  const drawOrbit = (ctx, cx, cy, rx, ry, tilt, color, alpha, width, planeIndex, time) => {
-    const segments = 216;
+  const drawOrbit = (ctx, cx, cy, rx, ry, tilt, color, alpha, width, planeIndex, time = 0) => {
+    const segments = 180;
     const period = planeIndex === 0 ? 0.42 : 0.5;
     const visible = planeIndex === 0 ? 0.29 : 0.27;
     const phase = time * 0.016 * (planeIndex % 2 ? -1 : 1) + planeIndex * 0.37;
@@ -165,7 +165,7 @@
 
   const drawTrail = (ctx, cx, cy, rx, ry, tilt, angle, color, strong) => {
     const length = strong ? 0.34 : 0.22;
-    const segments = 14;
+    const segments = strong ? 10 : 8;
 
     for (let index = 0; index < segments; index += 1) {
       const a1 = angle - (index / segments) * length;
@@ -246,10 +246,104 @@
     window.__artihubsHomeOrbitGeometry = canvases.map((item) => item.__homeOrbitGeometry).filter(Boolean);
   };
 
-  const renderCanvas = (canvas, now) => {
-    const ctx = canvas.getContext("2d");
-    const { dpr, width, height } = fitCanvas(canvas);
+  const rendererState = new WeakMap();
+
+  const getRendererState = (canvas) => {
+    if (!rendererState.has(canvas)) {
+      const staticCanvas = document.createElement("canvas");
+      rendererState.set(canvas, {
+        ctx: canvas.getContext("2d"),
+        staticCanvas,
+        staticCtx: staticCanvas.getContext("2d"),
+        layout: null,
+        geometry: null,
+        geometryDirty: true,
+        staticDirty: true,
+        lastMeasure: 0,
+      });
+    }
+
+    return rendererState.get(canvas);
+  };
+
+  const invalidateCanvas = (canvas) => {
+    const state = getRendererState(canvas);
+    state.geometryDirty = true;
+    state.staticDirty = true;
+  };
+
+  const refreshGeometry = (canvas, state, force = false) => {
+    const now = performance.now();
+    if (!force && state.geometry && !state.geometryDirty) return state.geometry;
+    if (!force && !state.geometry && now - state.lastMeasure < 250) return null;
+
+    state.lastMeasure = now;
+    const nextLayout = fitCanvas(canvas);
+    const sizeChanged = !state.layout ||
+      state.layout.dpr !== nextLayout.dpr ||
+      state.layout.width !== nextLayout.width ||
+      state.layout.height !== nextLayout.height ||
+      state.staticCanvas.width !== canvas.width ||
+      state.staticCanvas.height !== canvas.height;
+
+    state.layout = nextLayout;
+    if (sizeChanged) state.staticDirty = true;
+
     const geometry = measureSphere(canvas);
+    if (!geometry || !finite(geometry.r)) {
+      canvas.dataset.homeOrbitGeometrySource = "unavailable";
+      return null;
+    }
+
+    state.geometry = geometry;
+    state.geometryDirty = false;
+    state.staticDirty = true;
+    publishGeometry(canvas, geometry, nextLayout.width, nextLayout.height);
+    return geometry;
+  };
+
+  const drawStaticOrbitLayer = (canvas, state, geometry) => {
+    const { dpr, width, height } = state.layout;
+    const { cx, cy, r } = geometry;
+
+    if (state.staticCanvas.width !== canvas.width || state.staticCanvas.height !== canvas.height) {
+      state.staticCanvas.width = canvas.width;
+      state.staticCanvas.height = canvas.height;
+    }
+
+    const ctx = state.staticCtx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = "lighter";
+
+    planes.forEach((plane, planeIndex) => {
+      drawOrbit(
+        ctx,
+        cx,
+        cy,
+        r * plane.rx,
+        r * plane.ry,
+        plane.tilt,
+        plane.color,
+        plane.alpha,
+        planeIndex === 0 ? 1.35 : 1.12,
+        planeIndex,
+        0
+      );
+    });
+
+    ctx.globalCompositeOperation = "source-over";
+    state.staticDirty = false;
+  };
+
+  const renderCanvas = (canvas, now, forceMeasure = false) => {
+    const state = getRendererState(canvas);
+    const geometry = refreshGeometry(canvas, state, forceMeasure);
+    const layout = state.layout;
+    if (!layout) return;
+
+    const { ctx } = state;
+    const { dpr, width, height } = layout;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
@@ -261,14 +355,16 @@
 
     const time = now / 1000;
     const { cx, cy, r } = geometry;
-    publishGeometry(canvas, geometry, width, height);
+    if (state.staticDirty) {
+      drawStaticOrbitLayer(canvas, state, geometry);
+    }
 
     ctx.globalCompositeOperation = "lighter";
+    ctx.drawImage(state.staticCanvas, 0, 0, width, height);
+
     planes.forEach((plane, planeIndex) => {
       const rx = r * plane.rx;
       const ry = r * plane.ry;
-
-      drawOrbit(ctx, cx, cy, rx, ry, plane.tilt, plane.color, plane.alpha, planeIndex === 0 ? 1.35 : 1.12, planeIndex, time);
 
       for (let index = 0; index < plane.count; index += 1) {
         const base = (index / plane.count) * Math.PI * 2 + planeIndex * 0.9;
@@ -290,24 +386,44 @@
     ctx.globalCompositeOperation = "source-over";
   };
 
+  let animationActive = false;
+  let renderQueued = false;
+
   const renderAll = (now) => {
     canvases.forEach((canvas) => renderCanvas(canvas, now));
 
     if (!motionQuery.matches) {
       window.requestAnimationFrame(renderAll);
+    } else {
+      animationActive = false;
     }
   };
 
+  const startLoop = () => {
+    if (animationActive || motionQuery.matches) return;
+
+    animationActive = true;
+    window.requestAnimationFrame(renderAll);
+  };
+
   const requestRender = () => {
+    if (renderQueued) return;
+    renderQueued = true;
+
     window.requestAnimationFrame((now) => {
-      canvases.forEach((canvas) => renderCanvas(canvas, now));
+      renderQueued = false;
+      canvases.forEach((canvas) => renderCanvas(canvas, now, true));
     });
   };
 
   const observeGeometrySources = () => {
     if (!("ResizeObserver" in window)) return;
 
-    const observer = new ResizeObserver(requestRender);
+    const observer = new ResizeObserver(() => {
+      canvases.forEach(invalidateCanvas);
+      requestRender();
+    });
+
     canvases.forEach((canvas) => {
       const orbit = canvas.closest(".home-orbit");
       const globe = canvas.closest(".home-globe");
@@ -317,17 +433,32 @@
       if (globe) observer.observe(globe);
       if (iframe) {
         observer.observe(iframe);
-        iframe.addEventListener("load", requestRender);
+        iframe.addEventListener("load", () => {
+          invalidateCanvas(canvas);
+          requestRender();
+        });
       }
     });
   };
 
   observeGeometrySources();
-  window.requestAnimationFrame(renderAll);
-  window.addEventListener("resize", requestRender);
+  requestRender();
+  startLoop();
+  window.addEventListener("resize", () => {
+    canvases.forEach(invalidateCanvas);
+    requestRender();
+  });
   if (motionQuery.addEventListener) {
-    motionQuery.addEventListener("change", requestRender);
+    motionQuery.addEventListener("change", () => {
+      canvases.forEach(invalidateCanvas);
+      requestRender();
+      startLoop();
+    });
   } else if (motionQuery.addListener) {
-    motionQuery.addListener(requestRender);
+    motionQuery.addListener(() => {
+      canvases.forEach(invalidateCanvas);
+      requestRender();
+      startLoop();
+    });
   }
 })();

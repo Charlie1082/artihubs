@@ -1884,7 +1884,6 @@ button:disabled,
   overflow: visible;
   pointer-events: none;
   opacity: 0.94;
-  mix-blend-mode: screen;
   contain: layout paint;
 }
 
