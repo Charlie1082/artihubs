@@ -1883,7 +1883,7 @@ button:disabled,
   z-index: 2;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.82;
+  opacity: 0.94;
   mix-blend-mode: screen;
   contain: paint;
 }
@@ -1902,11 +1902,11 @@ button:disabled,
 }
 
 .home-orbit-arc {
-  stroke: rgba(176, 242, 255, 0.16);
-  stroke-width: 1.08;
-  stroke-dasharray: 42 36 9 120;
-  opacity: 0.78;
-  filter: drop-shadow(0 0 5px rgba(72, 229, 255, 0.18));
+  stroke: rgba(176, 242, 255, 0.34);
+  stroke-width: 1.28;
+  stroke-dasharray: 72 28 16 68;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 3px rgba(72, 229, 255, 0.2));
 }
 
 .home-orbit-arc-a {
@@ -1914,17 +1914,17 @@ button:disabled,
 }
 
 .home-orbit-arc-b {
-  stroke: rgba(176, 242, 255, 0.14);
-  stroke-dasharray: 32 72 12 150;
+  stroke: rgba(176, 242, 255, 0.28);
+  stroke-dasharray: 58 34 14 86;
   stroke-dashoffset: -44;
-  opacity: 0.64;
+  opacity: 0.74;
 }
 
 .home-orbit-arc-c {
-  stroke: rgba(176, 242, 255, 0.12);
-  stroke-dasharray: 58 52 8 180;
+  stroke: rgba(176, 242, 255, 0.2);
+  stroke-dasharray: 74 54 10 110;
   stroke-dashoffset: 86;
-  opacity: 0.5;
+  opacity: 0.48;
 }
 
 .home-orbit-limb-trail {
@@ -1955,7 +1955,7 @@ button:disabled,
 
 .home-orbit-static-glint {
   fill: rgba(176, 242, 255, 0.52);
-  opacity: 0.18;
+  opacity: 0.22;
   filter: drop-shadow(0 0 6px rgba(72, 229, 255, 0.24));
 }
 
@@ -1990,16 +1990,16 @@ button:disabled,
   }
 
   .home-orbit-arc {
-    stroke-dasharray: 54 58 10 132;
-    opacity: 0.56;
+    stroke-dasharray: 76 40 12 96;
+    opacity: 0.78;
   }
 
   .home-orbit-arc-b {
-    opacity: 0.42;
+    opacity: 0.58;
   }
 
   .home-orbit-arc-c {
-    opacity: 0.28;
+    opacity: 0.36;
   }
 
   .home-orbit-static-glint {
@@ -2381,7 +2381,7 @@ button:disabled,
 
   .home-orbit {
     inset: 4% 9% 20%;
-    opacity: 0.58;
+    opacity: 0.92;
   }
 
   .home-orbit-arc-c,
@@ -2393,13 +2393,14 @@ button:disabled,
   }
 
   .home-orbit-arc {
-    stroke-width: 0.78;
-    stroke-dasharray: 34 58 8 150;
-    opacity: 0.45;
+    stroke-width: 1.08;
+    stroke-dasharray: 144 28 32 58;
+    opacity: 0.84;
   }
 
   .home-orbit-arc-b {
-    opacity: 0.32;
+    stroke-dasharray: 112 28 30 72;
+    opacity: 0.66;
   }
 
   .home-orbit-satellite {
