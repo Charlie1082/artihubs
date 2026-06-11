@@ -1,5 +1,15 @@
-const devtoolsUrl = readArg("--devtools") || process.env.ORBIT_GEOMETRY_DEVTOOLS || "http://127.0.0.1:9223";
-const origin = (readArg("--origin") || process.env.ORBIT_GEOMETRY_ORIGIN || "http://127.0.0.1:4173").replace(/\/$/, "");
+import { spawn } from "node:child_process";
+import { createServer } from "node:http";
+import fs from "node:fs";
+import net from "node:net";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, "..");
+const explicitDevtools = readArg("--devtools") || process.env.ORBIT_GEOMETRY_DEVTOOLS || "";
+const explicitOrigin = readArg("--origin") || process.env.ORBIT_GEOMETRY_ORIGIN || "";
 const routes = (readArg("--routes") || process.env.ORBIT_GEOMETRY_ROUTES || "/,/ko/")
   .split(",")
   .map((route) => route.trim())
@@ -18,38 +28,207 @@ const expectedRatios = {
   "draft1-low": { rx: 1.05, ry: 0.58 },
 };
 
+const cleanupTasks = [];
+
 function readArg(name) {
   const index = process.argv.indexOf(name);
   return index === -1 ? "" : process.argv[index + 1] || "";
 }
 
-async function connectToPage() {
-  const targets = await fetch(`${devtoolsUrl}/json/list`).then((response) => response.json());
-  const target = targets.find((item) => item.type === "page");
-  if (!target?.webSocketDebuggerUrl) throw new Error("No Chrome DevTools page target found.");
+function normalizeOrigin(value) {
+  const trimmed = String(value || "").trim().replace(/\/$/, "");
+  if (!trimmed) return "";
+  return trimmed.replace(/^https:\/\/artihubs\.com$/u, "https://www.artihubs.com");
+}
 
-  const socket = new WebSocket(target.webSocketDebuggerUrl);
+function mimeType(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+  return {
+    ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8",
+    ".ico": "image/x-icon",
+    ".js": "text/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".map": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".svg": "image/svg+xml; charset=utf-8",
+    ".webmanifest": "application/manifest+json; charset=utf-8",
+  }[extension] || "application/octet-stream";
+}
+
+function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      server.close(() => resolve(address.port));
+    });
+  });
+}
+
+async function startStaticServer() {
+  const server = createServer((request, response) => {
+    try {
+      const requestUrl = new URL(request.url || "/", "http://127.0.0.1");
+      const pathname = decodeURIComponent(requestUrl.pathname);
+      const relativePath = pathname.endsWith("/") ? `${pathname.slice(1)}index.html` : pathname.slice(1);
+      const filePath = path.resolve(projectRoot, relativePath || "index.html");
+      const relative = path.relative(projectRoot, filePath);
+
+      if (relative.startsWith("..") || path.isAbsolute(relative)) {
+        response.writeHead(403);
+        response.end("Forbidden");
+        return;
+      }
+
+      if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+        response.writeHead(404);
+        response.end("Not found");
+        return;
+      }
+
+      response.writeHead(200, {
+        "cache-control": "no-store",
+        "content-type": mimeType(filePath),
+      });
+      fs.createReadStream(filePath).pipe(response);
+    } catch (error) {
+      response.writeHead(500);
+      response.end(error instanceof Error ? error.message : "Server error");
+    }
+  });
+
+  const port = await getFreePort();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", resolve);
+  });
+  cleanupTasks.push(() => new Promise((resolve) => server.close(resolve)));
+  return `http://127.0.0.1:${port}`;
+}
+
+function chromeCandidates() {
+  return [
+    process.env.CHROME_BIN,
+    process.env.GOOGLE_CHROME_BIN,
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/opt/google/chrome/chrome",
+  ].filter(Boolean);
+}
+
+function findChromeExecutable() {
+  return chromeCandidates().find((candidate) => fs.existsSync(candidate)) || "";
+}
+
+async function waitForJson(url, timeoutMs = 8000) {
+  const started = Date.now();
+  let lastError = null;
+  while (Date.now() - started < timeoutMs) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
+    await wait(200);
+  }
+  throw new Error(`Timed out waiting for ${url}${lastError ? `: ${lastError.message}` : ""}`);
+}
+
+async function startChrome() {
+  const executable = findChromeExecutable();
+  if (!executable) throw new Error("No Chrome/Chromium executable found for orbit geometry check.");
+
+  const port = await getFreePort();
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "artihubs-orbit-geometry-chrome-"));
+  const chrome = spawn(executable, [
+    "--headless=new",
+    `--remote-debugging-port=${port}`,
+    `--user-data-dir=${userDataDir}`,
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-background-networking",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--no-sandbox",
+    "about:blank",
+  ], {
+    stdio: ["ignore", "ignore", "pipe"],
+  });
+
+  let stderr = "";
+  chrome.stderr.on("data", (chunk) => {
+    stderr += chunk.toString();
+  });
+  cleanupTasks.push(() => {
+    if (!chrome.killed) chrome.kill("SIGTERM");
+  });
+
+  try {
+    await waitForJson(`http://127.0.0.1:${port}/json/version`, 10000);
+  } catch (error) {
+    throw new Error(`${error.message}${stderr ? `\nChrome stderr:\n${stderr.slice(-2000)}` : ""}`);
+  }
+
+  return `http://127.0.0.1:${port}`;
+}
+
+async function newTarget(devtoolsUrl, url) {
+  const endpoint = `${devtoolsUrl}/json/new?${encodeURIComponent(url)}`;
+  let response = await fetch(endpoint, { method: "PUT" }).catch(() => null);
+  if (!response?.ok) response = await fetch(endpoint).catch(() => null);
+  if (!response?.ok) throw new Error(`Could not create Chrome target for ${url}`);
+  const target = await response.json();
+  if (!target?.webSocketDebuggerUrl) throw new Error(`Chrome target missing websocket URL for ${url}`);
+  return target;
+}
+
+function connectToTarget(webSocketDebuggerUrl) {
+  const socket = new WebSocket(webSocketDebuggerUrl);
   const pending = new Map();
   let id = 0;
+  let closed = false;
+
+  function rejectPending(error) {
+    for (const { reject } of pending.values()) reject(error);
+    pending.clear();
+  }
 
   socket.addEventListener("message", (event) => {
     const payload = JSON.parse(event.data);
     if (!payload.id || !pending.has(payload.id)) return;
     const { resolve, reject } = pending.get(payload.id);
     pending.delete(payload.id);
-    if (payload.error) reject(new Error(payload.error.message));
-    else resolve(payload.result);
+    payload.error ? reject(new Error(payload.error.message)) : resolve(payload.result);
+  });
+  socket.addEventListener("close", () => {
+    closed = true;
+    rejectPending(new Error("CDP target closed before command completed."));
+  });
+  socket.addEventListener("error", () => {
+    closed = true;
+    rejectPending(new Error("CDP websocket error before command completed."));
   });
 
-  await new Promise((resolve) => socket.addEventListener("open", resolve, { once: true }));
+  const ready = new Promise((resolve, reject) => {
+    socket.addEventListener("open", resolve, { once: true });
+    socket.addEventListener("error", () => reject(new Error("Could not open CDP websocket.")), { once: true });
+  });
 
   async function command(method, params = {}) {
+    if (closed) throw new Error(`CDP target is closed before ${method}.`);
     const commandId = ++id;
     socket.send(JSON.stringify({ id: commandId, method, params }));
     return await new Promise((resolve, reject) => pending.set(commandId, { resolve, reject }));
   }
 
-  return { command, socket };
+  return { command, ready, socket };
 }
 
 async function wait(ms) {
@@ -182,14 +361,20 @@ async function waitForOrbit(command) {
   })`);
 }
 
-const { command, socket } = await connectToPage();
-await command("Page.enable");
-await command("Runtime.enable");
+async function inspect(devtoolsUrl, origin, route, viewport) {
+  const url = new URL(route, `${origin}/`).toString();
+  let target = null;
+  let socket = null;
 
-const results = [];
+  try {
+    target = await newTarget(devtoolsUrl, "about:blank");
+    const connection = connectToTarget(target.webSocketDebuggerUrl);
+    socket = connection.socket;
+    await connection.ready;
 
-for (const route of routes) {
-  for (const viewport of viewports) {
+    const { command } = connection;
+    await command("Page.enable");
+    await command("Runtime.enable");
     await command("Emulation.setDeviceMetricsOverride", {
       width: viewport.width,
       height: viewport.height,
@@ -199,31 +384,85 @@ for (const route of routes) {
     await command("Emulation.setEmulatedMedia", {
       features: [{ name: "prefers-reduced-motion", value: "no-preference" }],
     });
-    await command("Page.navigate", { url: `${origin}${route}` });
+    await command("Page.navigate", { url });
     await wait(1300);
     await waitForOrbit(command);
 
     const metrics = await evaluate(command, evaluateOrbitGeometryExpression());
-    results.push(validateMetrics(metrics, route, viewport));
+    return validateMetrics(metrics, route, viewport);
+  } catch (error) {
+    return {
+      ok: false,
+      route,
+      viewport,
+      failures: ["inspection-error"],
+      error: error instanceof Error ? error.message : String(error),
+    };
+  } finally {
+    if (socket?.readyState === WebSocket.OPEN) socket.close();
+    if (target?.id) {
+      await fetch(`${devtoolsUrl}/json/close/${target.id}`).catch(() => {});
+    }
   }
 }
 
-socket.close();
-
-const failed = results.filter((result) => !result.ok);
-const payload = {
-  ok: failed.length === 0,
-  origin,
-  devtoolsUrl,
-  viewports,
-  routes,
-  results,
-};
-
-const output = JSON.stringify(payload, null, 2);
-if (failed.length > 0) {
-  console.error(output);
-  process.exit(1);
+async function cleanup() {
+  for (const task of cleanupTasks.reverse()) {
+    await Promise.resolve()
+      .then(task)
+      .catch(() => {});
+  }
 }
 
-console.log(output);
+function printAndExit(payload) {
+  const output = JSON.stringify(payload, null, 2);
+  if (payload.ok) {
+    console.log(output);
+    process.exitCode = 0;
+  } else {
+    console.error(output);
+    process.exitCode = 1;
+  }
+}
+
+try {
+  const localOrigin = explicitOrigin ? "" : await startStaticServer();
+  const localDevtools = explicitDevtools ? "" : await startChrome();
+  const runOrigin = normalizeOrigin(explicitOrigin) || localOrigin;
+  const runDevtoolsUrl = normalizeOrigin(explicitDevtools) || localDevtools;
+  const results = [];
+
+  for (const route of routes) {
+    for (const viewport of viewports) {
+      results.push(await inspect(runDevtoolsUrl, runOrigin, route, viewport));
+    }
+  }
+
+  const failed = results.filter((result) => !result.ok);
+  printAndExit({
+    ok: failed.length === 0,
+    origin: runOrigin,
+    devtoolsUrl: runDevtoolsUrl,
+    localServer: !explicitOrigin,
+    localChrome: !explicitDevtools,
+    viewports,
+    routes,
+    results,
+  });
+} catch (error) {
+  printAndExit({
+    ok: false,
+    origin: normalizeOrigin(explicitOrigin),
+    devtoolsUrl: normalizeOrigin(explicitDevtools),
+    localServer: !explicitOrigin,
+    localChrome: !explicitDevtools,
+    failures: [
+      {
+        name: "orbit-geometry-bootstrap",
+        error: error instanceof Error ? error.message : String(error),
+      },
+    ],
+  });
+} finally {
+  await cleanup();
+}

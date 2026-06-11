@@ -86,12 +86,27 @@ function runCheck(check) {
     encoding: "utf8"
   });
 
+  const stdout = result.stdout.trim();
+  const stderr = result.stderr.trim();
   let parsed = null;
-  const output = result.stdout.trim() || result.stderr.trim();
+  const output = stdout || stderr;
   try {
     parsed = output ? JSON.parse(output) : null;
   } catch (error) {
     parsed = null;
+  }
+
+  if (!parsed && (stdout || stderr)) {
+    parsed = {
+      ok: result.status === 0,
+      stdout: stdout.slice(0, 4000),
+      stderr: stderr.slice(0, 4000)
+    };
+  } else if (parsed && stderr && result.status !== 0 && !Object.prototype.hasOwnProperty.call(parsed, "stderr")) {
+    parsed = {
+      ...parsed,
+      stderr: stderr.slice(0, 4000)
+    };
   }
 
   return {
@@ -99,7 +114,7 @@ function runCheck(check) {
     ok: result.status === 0,
     status: result.status,
     summary: parsed,
-    stderr: result.status === 0 ? "" : result.stderr.trim()
+    stderr: result.status === 0 ? "" : stderr
   };
 }
 
@@ -120,6 +135,7 @@ if (failed.length > 0) {
   payload.failures = failed.map((result) => ({
     name: result.name,
     status: result.status,
+    summary: result.summary,
     stderr: result.stderr
   }));
   console.error(JSON.stringify(payload, null, 2));
