@@ -32,6 +32,20 @@
     };
   };
 
+  const distanceFromSphereCenter = (point, cx, cy) => Math.hypot(point.x - cx, point.y - cy);
+
+  // Back-side orbit segments should not read as lines projected onto the globe face.
+  const orbitVisibility = (point, cx, cy, r) => {
+    const distance = distanceFromSphereCenter(point, cx, cy);
+    const insideSphereDisk = distance <= r * 1.012;
+
+    if (point.z < -0.035 && insideSphereDisk) return 0;
+    if (point.z < -0.2) return distance > r * 1.04 ? 0.18 : 0;
+    if (point.z < 0.04) return 0.45;
+
+    return 1;
+  };
+
   const rectFromSvgCircle = (iframe, svg, circle) => {
     const iframeRect = iframe.getBoundingClientRect();
     const svgRect = svg.getBoundingClientRect();
@@ -131,39 +145,32 @@
     return { dpr, width: rect.width, height: rect.height };
   };
 
-  const drawOrbit = (ctx, cx, cy, rx, ry, tilt, color, alpha, width, planeIndex, time = 0) => {
-    const segments = 180;
-    const period = planeIndex === 0 ? 0.42 : 0.5;
-    const visible = planeIndex === 0 ? 0.29 : 0.27;
-    const phase = time * 0.016 * (planeIndex % 2 ? -1 : 1) + planeIndex * 0.37;
+  const drawOrbit = (ctx, cx, cy, r, rx, ry, tilt, color, alpha, width) => {
+    const segments = 260;
 
     for (let index = 0; index < segments; index += 1) {
       const a1 = (index / segments) * Math.PI * 2;
-      const a2 = ((index + 0.82) / segments) * Math.PI * 2;
+      const a2 = ((index + 1.08) / segments) * Math.PI * 2;
       const mid = (a1 + a2) / 2;
-      const dash = (mid + phase + Math.PI * 12) % period;
-      const front = Math.sin(mid) > -0.16;
-      const nearLimb = Math.abs(Math.sin(mid)) < 0.24;
-
-      if (dash > visible && !nearLimb) continue;
-
       const p1 = pointOnOrbit(cx, cy, rx, ry, tilt, a1);
       const p2 = pointOnOrbit(cx, cy, rx, ry, tilt, a2);
-      const alphaScale = front ? 1 : 0.18;
+      const pMid = pointOnOrbit(cx, cy, rx, ry, tilt, mid);
+      const visibility = orbitVisibility(pMid, cx, cy, r);
+      if (visibility <= 0) continue;
 
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
-      ctx.strokeStyle = rgba(color, alpha * alphaScale);
-      ctx.lineWidth = front ? width : width * 0.72;
+      ctx.strokeStyle = rgba(color, alpha * visibility);
+      ctx.lineWidth = width * (visibility >= 0.8 ? 1 : 0.78);
       ctx.lineCap = "round";
-      ctx.shadowColor = rgba(color, alpha * alphaScale * 0.7);
-      ctx.shadowBlur = front ? 3 : 1;
+      ctx.shadowColor = rgba(color, alpha * visibility * 0.55);
+      ctx.shadowBlur = visibility >= 0.8 ? 2.2 : 0.8;
       ctx.stroke();
     }
   };
 
-  const drawTrail = (ctx, cx, cy, rx, ry, tilt, angle, color, strong) => {
+  const drawTrail = (ctx, cx, cy, r, rx, ry, tilt, angle, color, strong) => {
     const length = strong ? 0.34 : 0.22;
     const segments = strong ? 10 : 8;
 
@@ -172,8 +179,11 @@
       const a2 = angle - ((index + 0.72) / segments) * length;
       const p1 = pointOnOrbit(cx, cy, rx, ry, tilt, a1);
       const p2 = pointOnOrbit(cx, cy, rx, ry, tilt, a2);
-      const front = (p1.z + p2.z) / 2 > -0.12;
-      const fade = (1 - index / segments) * (front ? 1 : 0.28);
+      const pMid = pointOnOrbit(cx, cy, rx, ry, tilt, (a1 + a2) / 2);
+      const visibility = orbitVisibility(pMid, cx, cy, r);
+      if (visibility <= 0) continue;
+
+      const fade = (1 - index / segments) * visibility;
 
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
@@ -185,10 +195,13 @@
     }
   };
 
-  const drawSatellite = (ctx, point, color, size, pulse = 0) => {
-    const front = point.z > -0.12;
-    const alpha = front ? 0.86 : 0.2;
-    const scale = front ? 1 : 0.68;
+  const drawSatellite = (ctx, point, cx, cy, r, color, size, pulse = 0) => {
+    const visibility = orbitVisibility(point, cx, cy, r);
+    if (visibility <= 0) return;
+
+    const front = visibility > 0.8;
+    const alpha = front ? 0.86 : 0.34;
+    const scale = front ? 1 : 0.72;
     const radius = size * scale + pulse * 1.2;
     const glow = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius * 5.5);
 
@@ -220,8 +233,8 @@
     const point = pointOnOrbit(cx, cy, rx, ry, tilt, angle);
 
     ctx.globalAlpha = ease;
-    drawTrail(ctx, cx, cy, rx, ry, tilt, angle, palettes.gold, true);
-    drawSatellite(ctx, point, palettes.gold, 4.6, ease * 1.6);
+    drawTrail(ctx, cx, cy, r, rx, ry, tilt, angle, palettes.gold, true);
+    drawSatellite(ctx, point, cx, cy, r, palettes.gold, 4.6, ease * 1.6);
     ctx.globalAlpha = 1;
   };
 
@@ -321,14 +334,13 @@
         ctx,
         cx,
         cy,
+        r,
         r * plane.rx,
         r * plane.ry,
         plane.tilt,
         plane.color,
         plane.alpha,
-        planeIndex === 0 ? 1.35 : 1.12,
-        planeIndex,
-        0
+        planeIndex === 0 ? 1.35 : 1.12
       );
     });
 
@@ -375,10 +387,10 @@
         const pulse = strong && !motionQuery.matches ? (Math.sin(time * 1.2) + 1) / 2 : 0;
 
         if (!motionQuery.matches) {
-          drawTrail(ctx, cx, cy, rx, ry, plane.tilt, angle, plane.color, strong);
+          drawTrail(ctx, cx, cy, r, rx, ry, plane.tilt, angle, plane.color, strong);
         }
 
-        drawSatellite(ctx, point, plane.color, plane.size, pulse);
+        drawSatellite(ctx, point, cx, cy, r, plane.color, plane.size, pulse);
       }
     });
 
