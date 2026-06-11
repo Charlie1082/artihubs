@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | 계정 만들기</title>
+    <meta name="description" content="메이커 또는 시커 워크플로우를 위한 비공개 Artihubs 계정을 만드세요. 공개 메이커 프로필은 검토 후에만 표시됩니다." />
+    <link rel="canonical" href="https://www.artihubs.com/ko/signup/" />
+    <link rel="alternate" hreflang="en" href="https://www.artihubs.com/signup/" />
+    <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/signup/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.artihubs.com/signup/" />
+    <meta name="ko-source-fingerprint" content="43ff12abe59511e80793dc3b" />
+    <link rel="icon" href="../../favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/artihubs-favicon.svg" />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <meta name="theme-color" content="#05070b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Artihubs" />
+    <meta property="og:title" content="Artihubs | 계정 만들기" />
+    <meta property="og:description" content="메이커 또는 시커 워크플로우를 위한 비공개 Artihubs 계정을 만드세요. 공개 메이커 프로필은 검토 후에만 표시됩니다." />
+    <meta property="og:url" content="https://www.artihubs.com/ko/signup/" />
+    <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Artihubs | 계정 만들기" />
+    <meta name="twitter:description" content="메이커 또는 시커 워크플로우를 위한 비공개 Artihubs 계정을 만드세요. 공개 메이커 프로필은 검토 후에만 표시됩니다." />
+    <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta name="twitter:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main class="page auth-page">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="주요 내비게이션">
+          <a href="../living-globe-v2/">리빙 글로브</a>
+          <a href="../for-makers/">메이커</a>
+          <a href="../for-seekers/">시커</a>
+          <a href="../explore/">허브 탐색</a>
+          <a href="../login/">로그인</a>
+          <a class="is-active" aria-current="page" href="../signup/">가입</a>
+          <a class="language-link" href="../../signup/">English</a>
+        </div>
+      </nav>
+
+      <section class="auth-shell" aria-labelledby="signup-title">
+        <div class="auth-copy">
+          <p class="eyebrow">비공개 계정</p>
+          <h1 id="signup-title">
+            <span class="headline-line">Artihubs 계정을</span>
+            <span class="headline-line">만드세요.</span>
+          </h1>
+          <p class="lede">처음에는 비공개로 시작합니다. 공개는 검토 후에만 진행됩니다.</p>
+          <div class="auth-proof-grid" aria-label="가입 개인정보 보호 기준">
+            <div><strong>먼저 비공개</strong><span>계정을 만들어도 메이커 프로필은 공개되지 않습니다.</span></div>
+            <div><strong>국가/지역 단위 공개</strong><span>초기 공개 신호는 국가와 지역까지만 표시됩니다.</span></div>
+            <div><strong>검토 후 공개</strong><span>공개 프로필 항목은 표시되기 전에 검토됩니다.</span></div>
+          </div>
+        </div>
+
+        <form class="form-panel auth-card" data-signup-form>
+          <div class="form-grid">
+            <div class="field full">
+              <label for="signup-name">이름 또는 조직</label>
+              <input id="signup-name" name="displayName" autocomplete="name" required />
+            </div>
+            <div class="field">
+              <label for="signup-email">Email</label>
+              <input id="signup-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+            </div>
+            <fieldset class="field full role-intent">
+              <legend>역할 선택</legend>
+              <label>
+                <input type="radio" name="roleIntent" value="maker" checked />
+                <span>메이커</span>
+              </label>
+              <label>
+                <input type="radio" name="roleIntent" value="seeker" />
+                <span>시커</span>
+              </label>
+            </fieldset>
+          </div>
+          <p class="privacy-note">Creating an account does not publish a public 메이커 profile. Public profile fields are reviewed before they appear in Artihubs.</p>
+          <button class="button primary" type="submit">Create account</button>
+          <a class="button secondary auth-secondary-link" href="../login/">이미 계정이 있나요? 로그인</a>
+          <p class="form-status" data-auth-status aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <script src="../../auth-flow.js"></script>
+  </body>
+</html>

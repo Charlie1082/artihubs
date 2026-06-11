@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | 로그인</title>
+    <meta name="description" content="Artihubs 메이커 프로필, 시커 요청, 검토 워크스페이스로 돌아가려면 로그인하세요." />
+    <link rel="canonical" href="https://www.artihubs.com/ko/login/" />
+    <link rel="alternate" hreflang="en" href="https://www.artihubs.com/login/" />
+    <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/login/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.artihubs.com/login/" />
+    <meta name="ko-source-fingerprint" content="39a0fb5a08793b82218f4cd8" />
+    <link rel="icon" href="../../favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/artihubs-favicon.svg" />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <meta name="theme-color" content="#05070b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Artihubs" />
+    <meta property="og:title" content="Artihubs | 로그인" />
+    <meta property="og:description" content="Artihubs 메이커 프로필, 시커 요청, 검토 워크스페이스로 돌아가려면 로그인하세요." />
+    <meta property="og:url" content="https://www.artihubs.com/ko/login/" />
+    <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Artihubs | 로그인" />
+    <meta name="twitter:description" content="Artihubs 메이커 프로필, 시커 요청, 검토 워크스페이스로 돌아가려면 로그인하세요." />
+    <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta name="twitter:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <link rel="stylesheet" href="../../styles.css" />
+  </head>
+  <body>
+    <main class="page auth-page">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="주요 내비게이션">
+          <a href="../living-globe-v2/">리빙 글로브</a>
+          <a href="../for-makers/">메이커</a>
+          <a href="../for-seekers/">시커</a>
+          <a href="../explore/">허브 탐색</a>
+          <a class="is-active" aria-current="page" href="../login/">로그인</a>
+          <a href="../signup/">가입</a>
+          <a class="language-link" href="../../login/">English</a>
+        </div>
+      </nav>
+
+      <section class="auth-shell login-layout" aria-labelledby="login-title">
+        <div class="auth-copy">
+          <p class="eyebrow">워크스페이스로 돌아가기</p>
+          <h1 id="login-title">로그인</h1>
+          <p class="lede">메이커 프로필, 시커 요청, 검토 대기열로 돌아가세요.</p>
+          <div class="auth-proof-grid">
+            <div><strong>프로필 초안</strong><span>비공개 메이커 프로필 작업을 이어갑니다.</span></div>
+            <div><strong>시커 요청</strong><span>구조화된 요청과 매칭을 다시 확인합니다.</span></div>
+            <div><strong>검토 대기열</strong><span>관리자 접근은 역할 권한으로 제한됩니다.</span></div>
+          </div>
+        </div>
+
+        <form class="form-panel auth-card" data-login-form>
+          <div class="form-grid">
+            <div class="field full">
+              <label for="login-email">이메일</label>
+              <input id="login-email" name="email" type="email" autocomplete="email" required />
+            </div>
+            <div class="field full">
+              <label for="login-password">비밀번호</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" minlength="8" required />
+            </div>
+          </div>
+          <button class="button primary" type="submit">로그인</button>
+          <div class="auth-link-row">
+            <button class="button secondary" type="button" data-forgot-password>비밀번호를 잊으셨나요?</button>
+            <a class="button secondary" href="../signup/">계정 만들기</a>
+          </div>
+          <p class="form-status" data-auth-status aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <script src="../../auth-flow.js"></script>
+  </body>
+</html>

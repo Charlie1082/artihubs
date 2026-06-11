@@ -6,5 +6,9 @@ Disallow: /welcome/
 Disallow: /cofounder-mockup/
 Disallow: /privacy/
 Disallow: /terms/
+Disallow: /ko/terms/
+Disallow: /ko/privacy/
+Disallow: /ko/welcome/
+Disallow: /ko/account/
 
 Sitemap: https://www.artihubs.com/sitemap.xml

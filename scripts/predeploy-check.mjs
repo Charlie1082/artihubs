@@ -14,6 +14,11 @@ const checks = [
     args: ["scripts/syntax-check.mjs"]
   },
   {
+    name: "ko-parity",
+    cwd: projectRoot,
+    args: ["scripts/ko-parity-check.mjs"]
+  },
+  {
     name: "env",
     cwd: projectRoot,
     args: ["scripts/check-env.mjs"]

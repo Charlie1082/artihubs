@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Artihubs | 리빙 글로브 디렉터리</title>
+    <meta name="description" content="국가/지역 단위로 안전하게 표시된 메이커 신호, 역량 허브, 검토 후 공개되는 프로필을 Living Globe에서 탐색하세요." />
+    <link rel="canonical" href="https://www.artihubs.com/ko/living-globe-v2/" />
+    <link rel="alternate" hreflang="en" href="https://www.artihubs.com/living-globe-v2/" />
+    <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/living-globe-v2/" />
+    <link rel="alternate" hreflang="x-default" href="https://www.artihubs.com/living-globe-v2/" />
+    <meta name="ko-source-fingerprint" content="8600497f76c59ab55adf7d2c" />
+    <link rel="icon" href="../../favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="../../assets/artihubs-favicon.svg" />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <meta name="theme-color" content="#05070b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Artihubs" />
+    <meta property="og:title" content="Artihubs | 리빙 글로브 디렉터리" />
+    <meta property="og:description" content="국가/지역 단위로 안전하게 표시된 메이커 신호, 역량 허브, 검토 후 공개되는 프로필을 Living Globe에서 탐색하세요." />
+    <meta property="og:url" content="https://www.artihubs.com/ko/living-globe-v2/" />
+    <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Artihubs | 리빙 글로브 디렉터리" />
+    <meta name="twitter:description" content="국가/지역 단위로 안전하게 표시된 메이커 신호, 역량 허브, 검토 후 공개되는 프로필을 Living Globe에서 탐색하세요." />
+    <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
+    <meta name="twitter:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
+    <script src="../../living-globe-v2/embed-mode.js"></script>
+    <link rel="stylesheet" href="../../living-globe-v2/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="nav">
+        <a class="brand" href="../">
+          <img src="../../assets/artihubs-mark.svg" alt="" />
+          <span>Artihubs</span>
+        </a>
+        <div class="nav-links" aria-label="주요 내비게이션">
+          <a class="is-active" aria-current="page" href="../living-globe-v2/">리빙 글로브</a>
+          <a href="../for-makers/">메이커</a>
+          <a href="../for-seekers/">시커</a>
+          <a href="../explore/">허브 탐색</a>
+          <a href="../login/">로그인</a>
+          <a href="../signup/">가입</a>
+          <a class="language-link" href="../../living-globe-v2/">English</a>
+        </div>
+      </nav>
+      <section class="hero">
+        <div class="copy">
+          <p class="eyebrow">Living Globe</p>
+          <h1>Artihubs 메이커가 나타난 지역이 밝아집니다.</h1>
+          <p>글로브를 돌리고, 밝아진 지역을 살펴본 뒤, 장소 신호에서 메이커와 역량 디렉터리로 이동하세요.</p>
+          <dl class="metrics">
+            <div><dt id="metric-makers">0</dt><dd>Artihubs 메이커</dd></div>
+            <div><dt id="metric-regions">0</dt><dd>밝아진 지역</dd></div>
+            <div><dt id="metric-fields">0</dt><dd>분야</dd></div>
+          </dl>
+        </div>
+        <div class="globe-wrap" aria-label="인터랙티브 Artihubs 글로브 목업">
+          <div class="globe-stage" id="globe-stage">
+            <svg class="globe-svg" id="globe-svg" viewBox="0 0 760 760" role="img" aria-labelledby="globe-title globe-desc">
+              <title id="globe-title">Artihubs 리빙 글로브</title>
+              <desc id="globe-desc">등록된 메이커 지역이 빛나고 선택할 수 있는 회전 세계 지도입니다.</desc>
+              <defs>
+                <radialGradient id="ocean-gradient" cx="34%" cy="28%" r="74%">
+                  <stop offset="0%" stop-color="#1f3152" />
+                  <stop offset="46%" stop-color="#081322" />
+                  <stop offset="100%" stop-color="#02050c" />
+                </radialGradient>
+                <radialGradient id="shade-gradient" cx="36%" cy="28%" r="78%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0.14)" />
+                  <stop offset="42%" stop-color="rgba(255,255,255,0.02)" />
+                  <stop offset="76%" stop-color="rgba(0,0,0,0.42)" />
+                  <stop offset="100%" stop-color="rgba(0,0,0,0.78)" />
+                </radialGradient>
+                <filter id="region-glow" x="-45%" y="-45%" width="190%" height="190%">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+                  <feGaussianBlur stdDeviation="9" />
+                </filter>
+                <clipPath id="sphere-clip">
+                  <circle cx="380" cy="380" r="342" />
+                </clipPath>
+              </defs>
+              <circle class="ocean" cx="380" cy="380" r="342" />
+              <g class="map-layer" clip-path="url(#sphere-clip)">
+                <path class="graticule" id="graticule"></path>
+                <g id="country-layer"></g>
+                <g id="admin-layer"></g>
+                <g id="region-layer"></g>
+              </g>
+              <circle class="shade" cx="380" cy="380" r="342" />
+              <circle class="rim" cx="380" cy="380" r="342" />
+            </svg>
+            <div class="marker-layer" id="marker-layer" aria-label="등록된 Artihubs 지역"></div>
+            <div class="globe-controls" aria-label="글로브 컨트롤">
+              <button class="globe-control zoom-control" id="zoom-in" type="button" aria-label="확대">+</button>
+              <button class="globe-control zoom-control" id="zoom-out" type="button" aria-label="축소">−</button>
+              <button class="globe-control map-back" id="return-globe" type="button" aria-label="글로브로 돌아가기">↺</button>
+            </div>
+            <div class="globe-hint" id="globe-hint" aria-live="polite">100%</div>
+          </div>
+        </div>
+        <aside class="directory" id="directory">
+          <p class="eyebrow">선택한 지역</p>
+          <h2 id="region-title">한국 / 서울</h2>
+          <p class="region-note" id="region-note">지역 단위 신호만 표시하며, 거리 수준 위치는 노출하지 않습니다.</p>
+          <div id="cards"></div>
+          <a class="directory-link" id="explore-region-link" href="../explore/?country=Korea&region=Seoul">이 허브 탐색하기</a>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="../../living-globe-v2/script.js"></script>
+  </body>
+</html>
