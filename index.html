@@ -126,23 +126,68 @@
           <div class="home-orbit" aria-hidden="true">
             <svg class="home-orbit-svg" viewBox="0 0 720 720" focusable="false">
               <defs>
-                <linearGradient id="home-orbit-sweep" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="rgba(72, 229, 255, 0)" />
-                  <stop offset="46%" stop-color="rgba(72, 229, 255, 0.88)" />
-                  <stop offset="100%" stop-color="rgba(167, 139, 250, 0)" />
+                <linearGradient id="home-orbit-ice" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="rgba(176, 242, 255, 0)" />
+                  <stop offset="48%" stop-color="rgba(176, 242, 255, 0.64)" />
+                  <stop offset="100%" stop-color="rgba(176, 242, 255, 0)" />
+                </linearGradient>
+                <linearGradient id="home-orbit-amber" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="rgba(255, 209, 102, 0)" />
+                  <stop offset="50%" stop-color="rgba(255, 209, 102, 0.78)" />
+                  <stop offset="100%" stop-color="rgba(255, 209, 102, 0)" />
                 </linearGradient>
                 <filter id="home-orbit-soft-glow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="3.2" />
+                  <feGaussianBlur stdDeviation="2.1" />
                 </filter>
+                <path id="home-orbit-path-a" d="M 78 420 C 214 282 458 246 646 326 C 534 470 252 540 78 420" />
+                <path id="home-orbit-path-b" d="M 438 66 C 636 184 642 458 454 666 C 260 548 248 242 438 66" />
+                <path id="home-orbit-path-c" d="M 92 246 C 238 94 512 120 660 286 C 506 376 270 392 92 246" />
+                <path id="home-orbit-limb-path" d="M 512 118 C 646 224 672 406 586 552" />
               </defs>
-              <path class="home-orbit-trace home-orbit-trace-a" d="M 96 252 C 246 144 466 130 636 232" />
-              <path class="home-orbit-flow home-orbit-flow-a" pathLength="100" d="M 96 252 C 246 144 466 130 636 232" />
-              <path class="home-orbit-trace home-orbit-trace-b" d="M 462 114 C 588 166 654 278 640 394" />
-              <path class="home-orbit-flow home-orbit-flow-b" pathLength="100" d="M 462 114 C 588 166 654 278 640 394" />
-              <path class="home-horizon-scan" d="M 518 126 C 656 232 674 416 586 548" />
-              <circle class="home-orbit-glint home-orbit-glint-a" cx="505" cy="276" r="5" />
-              <circle class="home-orbit-glint home-orbit-glint-b" cx="302" cy="388" r="4.5" />
-              <circle class="home-orbit-glint home-orbit-glint-c" cx="548" cy="176" r="4" />
+              <use class="home-orbit-arc home-orbit-arc-a" href="#home-orbit-path-a" />
+              <use class="home-orbit-arc home-orbit-arc-b" href="#home-orbit-path-b" />
+              <use class="home-orbit-arc home-orbit-arc-c" href="#home-orbit-path-c" />
+              <path class="home-orbit-limb-trail" pathLength="100" d="M 512 118 C 646 224 672 406 586 552" />
+
+              <circle class="home-orbit-satellite home-orbit-satellite-a" r="2.5">
+                <animateMotion dur="22s" begin="-3s" repeatCount="indefinite"><mpath href="#home-orbit-path-a" /></animateMotion>
+                <animate attributeName="opacity" dur="22s" begin="-3s" repeatCount="indefinite" values="0.18;0.82;0.72;0.2;0.18" keyTimes="0;0.22;0.5;0.78;1" />
+                <animate attributeName="r" dur="22s" begin="-3s" repeatCount="indefinite" values="1.6;3.1;2.6;1.5;1.6" keyTimes="0;0.22;0.5;0.78;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-satellite-b" r="2.3">
+                <animateMotion dur="27s" begin="-13s" repeatCount="indefinite"><mpath href="#home-orbit-path-a" /></animateMotion>
+                <animate attributeName="opacity" dur="27s" begin="-13s" repeatCount="indefinite" values="0.16;0.76;0.68;0.18;0.16" keyTimes="0;0.2;0.52;0.78;1" />
+                <animate attributeName="r" dur="27s" begin="-13s" repeatCount="indefinite" values="1.5;2.8;2.4;1.4;1.5" keyTimes="0;0.2;0.52;0.78;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-satellite-c" r="2.4">
+                <animateMotion dur="31s" begin="-8s" repeatCount="indefinite"><mpath href="#home-orbit-path-b" /></animateMotion>
+                <animate attributeName="opacity" dur="31s" begin="-8s" repeatCount="indefinite" values="0.14;0.7;0.78;0.22;0.14" keyTimes="0;0.26;0.55;0.82;1" />
+                <animate attributeName="r" dur="31s" begin="-8s" repeatCount="indefinite" values="1.4;2.7;3;1.5;1.4" keyTimes="0;0.26;0.55;0.82;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-satellite-d" r="2.2">
+                <animateMotion dur="36s" begin="-22s" repeatCount="indefinite"><mpath href="#home-orbit-path-b" /></animateMotion>
+                <animate attributeName="opacity" dur="36s" begin="-22s" repeatCount="indefinite" values="0.12;0.62;0.7;0.18;0.12" keyTimes="0;0.25;0.56;0.84;1" />
+                <animate attributeName="r" dur="36s" begin="-22s" repeatCount="indefinite" values="1.4;2.5;2.8;1.4;1.4" keyTimes="0;0.25;0.56;0.84;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-satellite-e" r="2.3">
+                <animateMotion dur="29s" begin="-17s" repeatCount="indefinite"><mpath href="#home-orbit-path-c" /></animateMotion>
+                <animate attributeName="opacity" dur="29s" begin="-17s" repeatCount="indefinite" values="0.12;0.28;0.68;0.24;0.12" keyTimes="0;0.18;0.48;0.78;1" />
+                <animate attributeName="r" dur="29s" begin="-17s" repeatCount="indefinite" values="1.4;1.8;2.7;1.7;1.4" keyTimes="0;0.18;0.48;0.78;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-satellite-f" r="2.1">
+                <animateMotion dur="34s" begin="-5s" repeatCount="indefinite"><mpath href="#home-orbit-path-c" /></animateMotion>
+                <animate attributeName="opacity" dur="34s" begin="-5s" repeatCount="indefinite" values="0.1;0.24;0.6;0.22;0.1" keyTimes="0;0.2;0.5;0.8;1" />
+                <animate attributeName="r" dur="34s" begin="-5s" repeatCount="indefinite" values="1.3;1.7;2.5;1.6;1.3" keyTimes="0;0.2;0.5;0.8;1" />
+              </circle>
+              <circle class="home-orbit-satellite home-orbit-hero-pass" r="2.4">
+                <animateMotion dur="21s" begin="-6s" repeatCount="indefinite"><mpath href="#home-orbit-limb-path" /></animateMotion>
+                <animate attributeName="opacity" dur="21s" begin="-6s" repeatCount="indefinite" values="0;0;0.9;0.28;0;0" keyTimes="0;0.62;0.69;0.74;0.8;1" />
+                <animate attributeName="r" dur="21s" begin="-6s" repeatCount="indefinite" values="1.5;1.5;3.4;2.1;1.5;1.5" keyTimes="0;0.62;0.69;0.74;0.8;1" />
+              </circle>
+              <circle class="home-orbit-static-glint home-orbit-static-glint-a" cx="194" cy="416" r="2.4" />
+              <circle class="home-orbit-static-glint home-orbit-static-glint-b" cx="452" cy="116" r="2" />
+              <circle class="home-orbit-static-glint home-orbit-static-glint-c" cx="604" cy="312" r="2.2" />
+              <circle class="home-orbit-static-glint home-orbit-static-glint-d" cx="430" cy="622" r="1.9" />
             </svg>
           </div>
           <iframe
