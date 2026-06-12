@@ -96,18 +96,37 @@ body {
   gap: 10px;
 }
 
-.mobile-join {
+.mobile-auth-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-join,
+.mobile-auth {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 38px;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border: 1px solid rgba(76, 157, 255, 0.28);
   border-radius: 8px;
   background: rgba(76, 157, 255, 0.09);
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 760;
+  white-space: nowrap;
+}
+
+.mobile-signin {
+  border-color: rgba(177, 207, 255, 0.18);
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--muted);
+}
+
+.mobile-signup {
+  border-color: rgba(76, 157, 255, 0.3);
+  background: rgba(76, 157, 255, 0.09);
 }
 
 .mobile-menu {
@@ -170,6 +189,7 @@ body {
 }
 
 .mobile-join.is-active,
+.mobile-auth.is-active,
 .mobile-menu-panel a.is-active {
   background: rgba(76, 157, 255, 0.1);
   color: var(--text);
@@ -797,6 +817,22 @@ a {
   .stack-nav .mobile-nav-actions {
     display: flex;
     margin-left: auto;
+    gap: 7px;
+  }
+
+  .mobile-auth-pair {
+    gap: 5px;
+  }
+
+  .mobile-auth {
+    min-height: 36px;
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  .mobile-menu summary {
+    width: 38px;
+    height: 38px;
   }
 
   .hero {
