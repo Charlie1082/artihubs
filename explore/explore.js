@@ -4,8 +4,8 @@ const t = (en, ko) => (isKoreanMode ? ko : en);
 let currentMatches = [];
 let currentView = "cards";
 let currentSummary = t(
-  "Ask in natural language, or browse the current prototype maker set.",
-  "자연어로 물어보거나 현재 프로토타입 메이커 목록을 둘러보세요."
+  "Explain the need to AI ARX, or browse registered Maker Tags before starting a Request Tag.",
+  "AI ARX(AI 아릭스)에게 필요한 내용을 설명하거나, Request Tag를 시작하기 전에 등록된 Maker Tag를 살펴보세요."
 );
 let currentSummaryKo = "";
 let searchSequence = 0;
@@ -19,6 +19,8 @@ const searchStatus = document.querySelector("#search-status");
 const searchSummary = document.querySelector("#search-summary");
 const searchSummaryKo = document.querySelector("#search-summary-ko");
 const searchHeading = document.querySelector("#search-heading");
+const arxClarify = document.querySelector("#arx-clarify");
+const arxAnalysis = document.querySelector("#arx-analysis");
 const introField = document.querySelector("#intro-field");
 const tabButtons = document.querySelectorAll("[data-tab-target]");
 const viewButtons = document.querySelectorAll("[data-view]");
@@ -44,9 +46,9 @@ function markerFor(maker) {
 
 function renderMatchCard(maker) {
   const relevance = maker.relevance
-    ? t(`${Math.round(maker.relevance * 100)}% match`, `${Math.round(maker.relevance * 100)}% 매칭`)
-    : t("Prototype profile", "프로토타입 프로필");
-  const sourceLabel = t("Matched by Artihubs", "Artihubs 매칭");
+    ? t("Grounded evidence", "근거 확인됨")
+    : t("Registered Maker Tag", "등록된 Maker Tag");
+  const sourceLabel = t("Maker Tag.", "Maker Tag.");
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -63,19 +65,19 @@ function renderMatchCard(maker) {
       <p class="match-score"><span>${sourceLabel}</span><strong>${relevance}</strong></p>
       <p><strong>${escapeHtml(maker.capability)}</strong></p>
       <p>${escapeHtml(maker.summary)}</p>
-      <p class="match-reason"><span>${t("AI match note", "AI 매칭 메모")}</span>${escapeHtml(maker.reason || relevance)}</p>
+      <p class="match-reason"><span>${t("ARX evidence note", "ARX 근거 메모")}</span>${escapeHtml(maker.reason || relevance)}</p>
       ${koreanNote}
       <div class="tag-row">
         ${(maker.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
       </div>
-      <button class="button secondary" type="button" data-intro="${introValue}">${t("Ask about this maker", "이 메이커에 대해 문의")}</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">${t("Start Request Tag.", "Request Tag. 시작")}</button>
     </article>
   `;
 }
 
 function renderMatchRow(maker) {
-  const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : t("profile", "프로필");
-  const sourceLabel = t("Matched by Artihubs", "Artihubs 매칭");
+  const relevance = maker.relevance ? t("grounded", "근거 확인") : t("profile", "프로필");
+  const sourceLabel = t("Maker Tag.", "Maker Tag.");
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -87,10 +89,10 @@ function renderMatchRow(maker) {
         <p class="eyebrow">${escapeHtml(maker.country)} / ${escapeHtml(maker.region)} · ${sourceLabel} · ${relevance}</p>
         <h3>${escapeHtml(maker.name)}</h3>
         <p><strong>${escapeHtml(maker.capability)}</strong> · ${escapeHtml(maker.summary)}</p>
-        <p class="match-reason"><span>${t("AI match note", "AI 매칭 메모")}</span>${escapeHtml(maker.reason || t("Artihubs matched this maker to the request.", "Artihubs가 이 메이커를 요청과 매칭했습니다."))}</p>
+        <p class="match-reason"><span>${t("ARX evidence note", "ARX 근거 메모")}</span>${escapeHtml(maker.reason || t("ARX grounded this Maker Tag in the request.", "ARX가 이 Maker Tag를 요청 근거와 연결했습니다."))}</p>
         ${koreanNote}
       </div>
-      <button class="button secondary" type="button" data-intro="${introValue}">${t("Ask", "문의")}</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">${t("Request Tag.", "Request Tag.")}</button>
     </article>
   `;
 }
@@ -103,8 +105,8 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
   grid.innerHTML = matches.map((maker) => (currentView === "list" ? renderMatchRow(maker) : renderMatchCard(maker))).join("");
   emptyState.classList.toggle("is-visible", matches.length === 0);
   searchHeading.textContent = matches.length
-    ? t(`${matches.length} Artihubs match${matches.length === 1 ? "" : "es"}`, `Artihubs 매칭 ${matches.length}건`)
-    : t("No matches yet", "아직 매칭이 없습니다");
+    ? t(`${matches.length} grounded Maker Tag${matches.length === 1 ? "" : "s"}`, `근거 있는 Maker Tag ${matches.length}건`)
+    : t("No grounded Maker Tags yet", "아직 근거 있는 Maker Tag가 없습니다");
   searchSummary.textContent = currentSummary;
   if (searchSummaryKo) {
     searchSummaryKo.textContent = currentSummaryKo;
@@ -112,9 +114,34 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
   }
 }
 
+// ARX response extras (clarifying question, need analysis) are optional —
+// rendered when the engine provides them, invisible otherwise, so this UI
+// stays compatible until the ARX engine schema lands.
+function renderArxExtras(data = {}) {
+  if (arxClarify) {
+    const question = isKoreanMode
+      ? data.clarifyingQuestionKo || data.clarifyingQuestion
+      : data.clarifyingQuestion;
+    arxClarify.hidden = !question;
+    arxClarify.textContent = question
+      ? `${t("One question before matching:", "매칭 전에 한 가지만 여쭤볼게요:")} ${question}`
+      : "";
+  }
+
+  if (arxAnalysis) {
+    const koItems = Array.isArray(data.analysisKo) ? data.analysisKo : [];
+    const enItems = Array.isArray(data.analysis) ? data.analysis : [];
+    const items = isKoreanMode ? (koItems.length ? koItems : enItems) : enItems;
+    arxAnalysis.hidden = !items.length;
+    arxAnalysis.innerHTML = items.length
+      ? `<span class="eyebrow">${t("Need analysis", "필요 분석")}</span><ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+      : "";
+  }
+}
+
 async function searchMakers(query) {
   const sequence = ++searchSequence;
-  if (searchStatus) searchStatus.textContent = query ? t("Searching Artihubs...", "Artihubs 검색 중...") : "";
+  if (searchStatus) searchStatus.textContent = query ? t("ARX is searching registered Maker Tags...", "ARX가 등록된 Maker Tag를 검색하는 중...") : "";
 
   try {
     const response = await fetch("/api/v1/search", {
@@ -133,19 +160,21 @@ async function searchMakers(query) {
     } else {
       renderMatches(data.matches || [], data.summary, data.summaryKo);
     }
+    renderArxExtras(data);
     if (searchStatus) {
       searchStatus.textContent = query
         ? data.degraded
           ? t(
-            "Local prototype ranking is active while AI search is unavailable.",
-            "AI 검색을 사용할 수 없는 동안 로컬 프로토타입 순위가 적용됩니다."
+            "Local grounded Maker Tag recall is active while AI ARX is unavailable.",
+            "AI ARX를 사용할 수 없는 동안 로컬 Maker Tag 근거 검색이 적용됩니다."
           )
-          : t("Matched by Artihubs.", "Artihubs가 매칭했습니다.")
-        : t("Artihubs search is ready.", "Artihubs 검색이 준비되었습니다.");
+          : t("ARX returned grounded Maker Tags.", "ARX가 근거 있는 Maker Tag를 반환했습니다.")
+        : t("AI ARX is ready.", "AI ARX가 준비되었습니다.");
     }
   } catch (error) {
     if (sequence !== searchSequence) return;
-    renderMatches([], error.message, "");
+    renderMatches([], t("Among registered makers, ARX does not find a grounded match yet.", "아직 등록된 메이커 중에는 없습니다."), "");
+    renderArxExtras();
     if (searchStatus) searchStatus.textContent = t("Artihubs could not complete this search.", "Artihubs가 이 검색을 완료하지 못했습니다.");
   }
 }
@@ -170,7 +199,7 @@ function applyUrlContext() {
   const params = new URLSearchParams(window.location.search);
   const parts = [params.get("field"), params.get("region"), params.get("country")].filter(Boolean);
   if (parts.length) {
-    searchInput.value = t(`Find makers for ${parts.join(" in ")}.`, `${parts.join(" / ")} 메이커를 찾아주세요.`);
+    searchInput.value = t(`Find Maker Tags for ${parts.join(" in ")}.`, `${parts.join(" / ")} Maker Tag를 찾아주세요.`);
   }
 }
 

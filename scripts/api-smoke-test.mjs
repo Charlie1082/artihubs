@@ -2022,12 +2022,25 @@ assert(loggedSearchResult.statusCode === 200, "logged database search should sti
 assert(capturedSearchLogUrl.endsWith("/rest/v1/search_query_logs"), "search logging should insert into search_query_logs");
 assert(capturedSearchLogHeaders.apikey === "sb_secret_test", "search logging should use Supabase server key as apikey");
 assert(!capturedSearchLogHeaders.Authorization, "search logging should not send sb_secret as bearer token");
-assert(capturedSearchLogBody.query_preview.includes("[email]"), "search logging should redact emails from query preview");
-assert(!capturedSearchLogBody.query_preview.includes("buyer@example.com"), "search logging must not store raw email addresses in query preview");
+assert(capturedSearchLogBody.query_preview === "", "search logging should store hash-only retention by default (no query preview)");
 assert(/^[a-f0-9]{64}$/i.test(capturedSearchLogBody.query_hash), "search logging should store a hex HMAC query hash");
 assert(capturedSearchLogBody.rank_source === "fallback", "search logging should record the rank source");
 assert(capturedSearchLogBody.status === "degraded", "search logging should mark fallback search as degraded");
 assert(capturedSearchLogBody.result_profile_ids.includes("30000000-0000-4000-8000-000000000091"), "search logging should store matched public profile ids");
+
+process.env.SEARCH_QUERY_PREVIEW_ENABLED = "true";
+const previewedSearchResult = await invoke(
+  search,
+  {
+    query: "precision ceramic sensor housings in Korea for buyer@example.com"
+  },
+  { "x-forwarded-for": "127.0.0.11" }
+);
+delete process.env.SEARCH_QUERY_PREVIEW_ENABLED;
+
+assert(previewedSearchResult.statusCode === 200, "preview-enabled search should still return a normal search response");
+assert(capturedSearchLogBody.query_preview.includes("[email]"), "opt-in search logging should redact emails from query preview");
+assert(!capturedSearchLogBody.query_preview.includes("buyer@example.com"), "opt-in search logging must not store raw email addresses in query preview");
 
 globalThis.fetch = originalFetch;
 delete process.env.SUPABASE_URL;

@@ -15,6 +15,7 @@ const allowed = {
   SEARCH_FALLBACK_MODE: new Set(["degraded", "strict"]),
   SEARCH_PROFILE_SOURCE: new Set(["local", "database"]),
   SEARCH_QUERY_LOGGING_ENABLED: new Set(["true", "false"]),
+  SEARCH_QUERY_PREVIEW_ENABLED: new Set(["true", "false"]),
   TURNSTILE_REQUIRED: new Set(["true", "false"]),
   AUTH_PUBLIC_AUTH_ENABLED: new Set(["true", "false"])
 };

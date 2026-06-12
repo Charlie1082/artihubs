@@ -6,6 +6,7 @@
     "field": "assistive hardware",
     "capability": "compact robotics parts",
     "tags": ["robotics", "small-batch", "sensor housings"],
+    "keywordsKo": ["로봇", "로보틱스", "소량 생산", "센서 하우징", "보조 하드웨어", "서울"],
     "summary": "Builds compact parts and assistive hardware prototypes for small teams."
   },
   {
@@ -15,6 +16,7 @@
     "field": "assistive hardware",
     "capability": "assistive hardware prototypes",
     "tags": ["accessibility", "interfaces", "prototype"],
+    "keywordsKo": ["보조 하드웨어", "접근성", "인터페이스", "프로토타입", "서울"],
     "summary": "Designs early assistive hardware interfaces with practical assembly constraints."
   },
   {
@@ -24,6 +26,7 @@
     "field": "marine sensors",
     "capability": "waterproof sensor housings",
     "tags": ["marine", "waterproof", "fixtures"],
+    "keywordsKo": ["방수", "하우징", "해양", "마린", "센서", "테스트 픽스처", "부산"],
     "summary": "Makes small waterproof housings and test fixtures for marine sensor projects."
   },
   {
@@ -33,6 +36,7 @@
     "field": "controller boards",
     "capability": "small-batch controller boards",
     "tags": ["electronics", "motion", "firmware"],
+    "keywordsKo": ["컨트롤러 보드", "전자", "펌웨어", "모션", "소량 생산"],
     "summary": "Builds controller board prototypes for motion systems and custom interfaces."
   },
   {
@@ -42,6 +46,7 @@
     "field": "controller boards",
     "capability": "AI workflow tools",
     "tags": ["software", "automation", "operators"],
+    "keywordsKo": ["워크플로", "자동화", "소프트웨어", "도구"],
     "summary": "Creates lightweight AI workflow tools for solo operators and small studios."
   },
   {
@@ -51,6 +56,7 @@
     "field": "garage CNC",
     "capability": "desktop CNC production jigs",
     "tags": ["CNC", "jigs", "short-run"],
+    "keywordsKo": ["지그", "픽스처", "단기 생산", "소량 생산", "가공"],
     "summary": "Produces desktop CNC fixtures for repeatable short-run production."
   },
   {
@@ -60,6 +66,7 @@
     "field": "sensor fixtures",
     "capability": "sensor fixtures",
     "tags": ["sensors", "industrial design", "fixtures"],
+    "keywordsKo": ["센서", "픽스처", "산업 디자인", "조립"],
     "summary": "Builds practical sensor fixtures and assembly aids for field prototypes."
   },
   {
@@ -69,6 +76,7 @@
     "field": "sensor fixtures",
     "capability": "industrial design mockups",
     "tags": ["mockups", "prototype", "CAD"],
+    "keywordsKo": ["목업", "프로토타입", "산업 디자인", "설계"],
     "summary": "Helps small teams move from rough physical idea to inspectable mockup."
   },
   {
@@ -78,6 +86,7 @@
     "field": "repair kits",
     "capability": "compact repairable product kits",
     "tags": ["repair", "kits", "consumer hardware"],
+    "keywordsKo": ["수리", "수리 키트", "키트", "소비자 하드웨어"],
     "summary": "Creates compact repair kits for small product teams and local operators."
   },
   {
@@ -87,6 +96,7 @@
     "field": "repairable products",
     "capability": "repairable product kits",
     "tags": ["repairability", "kits", "EU"],
+    "keywordsKo": ["수리", "수리 가능", "키트", "유럽"],
     "summary": "Focuses on repairable product concepts and kit-based service workflows."
   },
   {
@@ -96,6 +106,7 @@
     "field": "agritech",
     "capability": "agritech field modules",
     "tags": ["agritech", "field modules", "outdoor"],
+    "keywordsKo": ["농업", "애그리테크", "필드 모듈", "야외"],
     "summary": "Builds field-ready modules for small agritech tests and local deployments."
   }
 ]

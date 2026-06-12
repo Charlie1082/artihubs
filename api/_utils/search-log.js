@@ -22,6 +22,12 @@ function queryHash(query) {
   return crypto.createHmac("sha256", hashSecret()).update(normalizeQuery(query)).digest("hex");
 }
 
+// Minimal retention default: store only the HMAC query hash. The redacted
+// preview is kept solely behind an explicit opt-in toggle.
+function queryPreviewEnabled() {
+  return process.env.SEARCH_QUERY_PREVIEW_ENABLED === "true";
+}
+
 function queryPreview(query) {
   return String(query || "")
     .trim()
@@ -55,7 +61,7 @@ async function writeSearchQueryLog({ query, matches, rankSource, model = null, d
   }
 
   const row = {
-    query_preview: queryPreview(query),
+    query_preview: queryPreviewEnabled() ? queryPreview(query) : "",
     query_hash: queryHash(query),
     query_language: queryLanguage(query),
     result_profile_ids: resultProfileIds(matches),

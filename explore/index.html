@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Artihubs | Explore Hubs</title>
-    <meta name="description" content="Search Artihubs by capability, field, country, and region to find makers and small teams suited to specific requests." />
+    <meta name="description" content="Explain the problem, materials, software, or creative work you need to AI ARX and browse grounded Maker Tags before starting a Request Tag." />
     <link rel="canonical" href="https://www.artihubs.com/explore/" />
     <link rel="alternate" hreflang="en" href="https://www.artihubs.com/explore/" />
     <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/explore/" />
@@ -17,7 +17,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Artihubs" />
     <meta property="og:title" content="Artihubs | Explore Hubs" />
-    <meta property="og:description" content="Search Artihubs by capability, field, country, and region to find makers and small teams suited to specific requests." />
+    <meta property="og:description" content="Explain the problem, materials, software, or creative work you need to AI ARX and browse grounded Maker Tags before starting a Request Tag." />
     <meta property="og:url" content="https://www.artihubs.com/explore/" />
     <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta property="og:image:width" content="1200" />
@@ -26,7 +26,7 @@
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Artihubs | Explore Hubs" />
-    <meta name="twitter:description" content="Search Artihubs by capability, field, country, and region to find makers and small teams suited to specific requests." />
+    <meta name="twitter:description" content="Explain the problem, materials, software, or creative work you need to AI ARX and browse grounded Maker Tags before starting a Request Tag." />
     <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta name="twitter:image:alt" content="Artihubs Living Globe showing region-safe maker signals" />
     <meta name="turnstile-site-key" content="" />
@@ -40,16 +40,16 @@
           <span>Artihubs</span>
         </a>
         <div class="nav-links" aria-label="Primary navigation">
-          <a href="../living-globe-v2/">Living Globe</a>
+          <a href="../living-globe-v2/">Globe Navigation</a>
           <a href="../for-makers/">For Makers</a>
-          <a href="../for-seekers/">For Seekers</a>
+          <a href="../for-seekers/">For Finders</a>
           <a class="is-active" href="./" aria-current="page">Explore Hubs</a>
           <a href="../login/">Sign in</a>
-          <a href="../signup/">Join</a>
+          <a href="../signup/">Sign Up</a>
           <a class="language-link" href="../ko/explore/" lang="ko">한국어</a>
         </div>
         <div class="mobile-nav-actions">
-          <a class="mobile-join" href="../signup/">Join</a>
+          <div class="mobile-auth-pair"><a class="mobile-auth mobile-signin" href="../login/">Sign in</a><a class="mobile-auth mobile-signup" href="../signup/">Sign Up</a></div>
           <details class="mobile-menu">
             <summary aria-label="Open navigation">
               <span></span>
@@ -57,11 +57,12 @@
               <span></span>
             </summary>
             <div class="mobile-menu-panel" aria-label="Mobile navigation">
-              <a href="../living-globe-v2/">Living Globe</a>
+              <a href="../living-globe-v2/">Globe Navigation</a>
               <a class="is-active" href="./" aria-current="page">Explore Hubs</a>
               <a href="../for-makers/">For Makers</a>
-              <a href="../for-seekers/">For Seekers</a>
+              <a href="../for-seekers/">For Finders</a>
               <a href="../login/">Sign in</a>
+              <a href="../signup/">Sign Up</a>
               <a class="language-link" href="../ko/explore/" lang="ko">한국어</a>
             </div>
           </details>
@@ -71,17 +72,17 @@
       <section class="hero single explore-hero">
         <p class="eyebrow">AI maker discovery</p>
         <h1>
-          <span class="headline-line">Describe the need.</span>
-          <span class="headline-line">Artihubs finds</span>
-          <span class="headline-line">the right makers.</span>
+          <span class="headline-line">Instead of wandering</span>
+          <span class="headline-line">through categories,</span>
+          <span class="headline-line">explain it to AI ARX and ask directly.</span>
         </h1>
-        <p class="lede">Skip category setup. Search with the kind of messy, specific request you would normally type into a message: part, material, prototype, software workflow, region, timeline, or constraint.</p>
+        <p class="lede">What you want starts not from a category, but from a free conversation. Tell ARX the problem you need to solve, the parts, materials, software, creative work, and the situation you are considering now.</p>
       </section>
 
       <section class="section workbench-preview" aria-labelledby="workbench-title">
         <div class="section-head">
           <h2 id="workbench-title">Discovery workbench.</h2>
-          <p>Search, region-safe filters, ranked results, and selected-maker context stay in one operational surface.</p>
+          <p>Search, region-safe filters, grounded Maker Tag results, and selected-maker context stay in one operational surface.</p>
         </div>
         <div class="workbench-shell">
           <div class="workbench-query">
@@ -94,7 +95,7 @@
             <span>status: reviewed</span>
           </div>
           <article class="workbench-result">
-            <span class="match-score-label">91% match</span>
+            <span class="match-score-label">Maker Tag.</span>
             <h3>Quiet Forge Lab</h3>
             <p>Compact robotics parts, fixtures, sensor housings, and short-run prototype support.</p>
             <div class="tag-row">
@@ -109,10 +110,14 @@
       <section class="section explore-tabs-section">
         <div class="tab-bar" role="tablist" aria-label="Explore Hubs tabs">
           <button class="tab-button is-active" id="search-tab" type="button" role="tab" aria-selected="true" aria-controls="search-panel" data-tab-target="search-panel">Search</button>
-          <button class="tab-button" id="ask-tab" type="button" role="tab" aria-selected="false" aria-controls="ask-panel" data-tab-target="ask-panel">Ask</button>
+          <button class="tab-button" id="ask-tab" type="button" role="tab" aria-selected="false" aria-controls="ask-panel" data-tab-target="ask-panel">Request Tag.</button>
         </div>
 
         <div class="tab-panel is-active" id="search-panel" role="tabpanel" aria-labelledby="search-tab">
+          <div class="arx-intro" id="arx-intro">
+            <p class="arx-line">Instead of wandering categories, describe and ask AI ARX. Your journey starts in open conversation, not category trees: the problem you are solving, the parts, materials, software, or creative work you need, and the situation you are weighing right now.</p>
+            <p class="arx-bounds">ARX is an AI. Match explanations come only from capability evidence each maker registered, and when no registered maker fits, ARX says so plainly.</p>
+          </div>
           <form class="ai-search-panel" id="ai-search-form">
             <label class="sr-only" for="ai-search-input">Natural language maker search</label>
             <textarea id="ai-search-input" name="query" placeholder="Example: I need a small team that can make waterproof housings for marine sensors, ideally in Korea or nearby." rows="4"></textarea>
@@ -122,18 +127,18 @@
             </div>
           </form>
 
-          <div class="query-suggestions" aria-label="Example searches">
-            <button type="button">compact robotics parts near Korea</button>
-            <button type="button">repairable consumer product kits in Japan or Germany</button>
-            <button type="button">small batch controller boards and firmware help</button>
-            <button type="button">field-ready agritech modules for outdoor tests</button>
+          <div class="query-suggestions" aria-label="Conversation starters">
+            <button type="button">I am building a marine sensor and need a waterproof housing, starting with a small prototype run.</button>
+            <button type="button">I keep repairing the same device. Who could build a repairable kit version with me?</button>
+            <button type="button">I have controller board schematics but no one for a small batch and firmware help.</button>
+            <button type="button">I am testing an agritech idea outdoors and need field modules I can iterate on.</button>
           </div>
 
           <div class="search-meta">
             <div>
-              <p class="eyebrow">Ranked matches</p>
+              <p class="eyebrow">Grounded Maker Tags</p>
               <h2 id="search-heading">Current Artihubs makers</h2>
-              <p id="search-summary">Ask in natural language, or browse the current prototype maker set.</p>
+              <p id="search-summary">Explain the need to AI ARX, or browse registered Maker Tags before starting a Request Tag.</p>
               <p class="summary-companion" id="search-summary-ko" lang="ko" hidden></p>
             </div>
             <div class="view-switch" aria-label="Result view">
@@ -143,16 +148,18 @@
           </div>
 
           <p class="form-status" id="search-status" aria-live="polite"></p>
-          <div class="empty-state" id="empty-state">No makers match this request yet. Try describing the need in another way.</div>
+          <div class="arx-clarify" id="arx-clarify" aria-live="polite" hidden></div>
+          <div class="arx-analysis" id="arx-analysis" hidden></div>
+          <div class="empty-state" id="empty-state">Among registered makers, ARX does not find a grounded match yet.</div>
           <div class="directory-grid" id="maker-grid"></div>
         </div>
 
         <div class="tab-panel" id="ask-panel" role="tabpanel" aria-labelledby="ask-tab" hidden>
           <section class="two-grid ask-grid">
             <div>
-              <p class="eyebrow">Request an intro</p>
+              <p class="eyebrow">Request Tag.</p>
               <h2>Ask Artihubs to help start the conversation.</h2>
-              <p class="lede">Use this when a maker looks close enough to contact, but the first message needs structure. Artihubs captures context before either side starts negotiating.</p>
+              <p class="lede">Use this when a Maker Tag looks close enough to contact, but the first message needs structure. Artihubs captures context before either side starts negotiating.</p>
             </div>
             <form class="form-panel" data-intake-form data-intake-type="intro">
               <div class="form-grid">
@@ -181,8 +188,8 @@
       </section>
 
       <footer class="footer">
-        <p>Explore uses approved public maker profiles only. Intake submissions are private until reviewed and published.</p>
-        <a href="../living-globe-v2/">Open living globe</a>
+        <p>Explore uses approved public Maker Tags only. Intake submissions are private until reviewed and published.</p>
+        <a href="../living-globe-v2/">Open Globe Navigation</a>
       </footer>
     </main>
     <script src="../site.js"></script>

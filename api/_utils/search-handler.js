@@ -1,3 +1,4 @@
+const crypto = require("node:crypto");
 const fs = require("fs");
 const path = require("path");
 const { clientIp, handleCorsPreflight, isJsonRequest, originAllowed, publicError, readJson, requestId, safeFetch, setCorsHeaders, sendJson } = require("./http");
@@ -7,8 +8,14 @@ const { hasSupabaseServerConfig, supabaseHeaders, supabaseServerKey, supabaseUrl
 
 const CLAUDE_SEARCH_MODEL = "claude-sonnet-4-6";
 const MAX_QUERY_LENGTH = 700;
+const MAX_CLARIFICATION_LENGTH = 400;
 const MAX_BODY_BYTES = 5_000;
 const MAX_MATCHES = 8;
+const MAX_ANALYSIS_ITEMS = 4;
+const MAX_EVIDENCE_ITEMS = 4;
+// Equal-capability rotation (원칙5): relevance is bucketed so near-equal makers
+// rotate order daily instead of always sorting the same names first.
+const RELEVANCE_BUCKET_SIZE = 0.05;
 const FALLBACK_MODES = new Set(["degraded", "strict"]);
 let cachedMakers = null;
 let cachedPublicProfiles = null;
@@ -72,9 +79,12 @@ async function loadSearchProfiles() {
 }
 
 function normalize(value) {
+  // NFC recomposition after stripping Latin diacritics: NFD alone leaves Hangul
+  // as conjoining Jamo, which the [\uac00-\ud7a3] token class cannot match.
   return String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .normalize("NFC")
     .toLowerCase();
 }
 
@@ -97,6 +107,58 @@ function searchFallbackMode() {
   return FALLBACK_MODES.has(mode) ? mode : "degraded";
 }
 
+function rotationSeed() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function rotationKey(seed, name) {
+  return crypto.createHash("sha256").update(`${seed}:${normalize(name)}`).digest("hex");
+}
+
+// No popularity, engagement, or name-search signals enter this ordering —
+// only need relevance plus a daily-rotating deterministic tie-break.
+function rotatedByRelevance(items) {
+  const seed = rotationSeed();
+  return items
+    .map((item) => ({
+      item,
+      bucket: Math.round(item.relevance / RELEVANCE_BUCKET_SIZE),
+      key: rotationKey(seed, item.name)
+    }))
+    .sort((a, b) => b.bucket - a.bucket || a.key.localeCompare(b.key))
+    .map((entry) => entry.item);
+}
+
+function makerProfileText(maker) {
+  return normalize(
+    [
+      maker.name,
+      maker.country,
+      maker.region,
+      maker.field,
+      maker.capability,
+      maker.summary,
+      ...(maker.tags || []),
+      ...(maker.keywordsKo || [])
+    ].join(" ")
+  );
+}
+
+function verifiedEvidence(maker, evidence) {
+  const profileText = makerProfileText(maker);
+  return (Array.isArray(evidence) ? evidence : [])
+    .map((item) => cleanText(item, 90))
+    .filter((item) => item.length > 1 && profileText.includes(normalize(item)))
+    .slice(0, MAX_EVIDENCE_ITEMS);
+}
+
+function cleanAnalysis(items, maxItemLength = 140) {
+  return (Array.isArray(items) ? items : [])
+    .map((item) => cleanText(item, maxItemLength))
+    .filter(Boolean)
+    .slice(0, MAX_ANALYSIS_ITEMS);
+}
+
 function extractJson(text) {
   const trimmed = String(text || "").trim();
   try {
@@ -116,6 +178,10 @@ function mergeClaudeMatches(makers, claudeMatches) {
   (claudeMatches || []).forEach((match) => {
     const maker = makerByName.get(normalize(match.name));
     if (!maker || used.has(maker.name)) return;
+    const evidence = verifiedEvidence(maker, match.evidence);
+    // No-hallucination hard rule: a match must be grounded in at least one
+    // verbatim phrase from the maker's own provided profile fields.
+    if (evidence.length === 0) return;
     used.add(maker.name);
     merged.push({
       ...maker,
@@ -123,12 +189,13 @@ function mergeClaudeMatches(makers, claudeMatches) {
       relevance: relevanceScore(match.relevance),
       reason: cleanText(match.reason || "Artihubs matched this maker to the request.", 320),
       reasonKo: cleanText(match.reasonKo, 240),
+      evidence,
       suggestedIntro: cleanText(match.suggestedIntro, 260),
       suggestedIntroKo: cleanText(match.suggestedIntroKo, 220)
     });
   });
 
-  return merged.sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name)).slice(0, MAX_MATCHES);
+  return rotatedByRelevance(merged).slice(0, MAX_MATCHES);
 }
 
 function tokenize(value) {
@@ -142,18 +209,17 @@ function fallbackRank({ query, makers }) {
   const queryTokens = tokenize(query);
   const queryText = normalize(query);
   const scored = makers.map((maker) => {
-    const makerText = normalize(
-      [
-        maker.name,
-        maker.country,
-        maker.region,
-        maker.field,
-        maker.capability,
-        maker.summary,
-        ...(maker.tags || [])
-      ].join(" ")
-    );
-    const matches = queryTokens.filter((token) => makerText.includes(token));
+    const makerText = makerProfileText(maker);
+    const makerTokens = tokenize(makerText);
+    const matches = queryTokens.filter((token) => {
+      if (makerText.includes(token)) return true;
+      // Korean compound nouns (e.g. 방수기능) won't substring-match spaced
+      // profile keywords (방수), so also match profile tokens inside the query token.
+      if (hasKorean(token)) {
+        return makerTokens.some((makerToken) => hasKorean(makerToken) && makerToken.length > 1 && token.includes(makerToken));
+      }
+      return false;
+    });
     let score = matches.length / Math.max(queryTokens.length, 1);
     if (queryText.includes(normalize(maker.country))) score += 0.2;
     if (queryText.includes(normalize(maker.region))) score += 0.18;
@@ -167,21 +233,24 @@ function fallbackRank({ query, makers }) {
         matches.length > 0
           ? `Matched prototype profile terms: ${matches.slice(0, 5).join(", ")}.`
           : "Included as a broad prototype profile while AI ranking is unavailable.",
-      reasonKo: hasKorean(query) ? "AI 검색이 일시적으로 unavailable 상태라 로컬 프로토타입 랭킹을 사용했습니다." : "",
+      reasonKo: hasKorean(query)
+        ? matches.length > 0
+          ? `일치한 프로필 용어: ${matches.slice(0, 5).join(", ")}. AI 검색이 일시 중단되어 로컬 순위를 사용했습니다.`
+          : "AI 검색이 일시 중단되어 로컬 프로토타입 순위를 사용했습니다."
+        : "",
       suggestedIntro: `Ask ${maker.name} about ${maker.capability}.`,
       suggestedIntroKo: hasKorean(query) ? `${maker.name}에게 ${maker.capability} 관련 가능성을 문의하세요.` : ""
     };
   });
 
-  return scored
-    .filter((maker) => maker.relevance >= 0.18)
-    .sort((a, b) => b.relevance - a.relevance || a.name.localeCompare(b.name))
-    .slice(0, MAX_MATCHES);
+  return rotatedByRelevance(scored.filter((maker) => maker.relevance >= 0.18)).slice(0, MAX_MATCHES);
 }
 
-async function claudeRank({ apiKey, query, makers }) {
+async function claudeRank({ apiKey, query, makers, clarification, clarificationProvided }) {
   const prompt = {
     query,
+    clarificationProvided,
+    clarification: clarificationProvided ? clarification : null,
     wantsKoreanCompanion: hasKorean(query),
     makers: makers.map((maker) => ({
       name: maker.name,
@@ -206,12 +275,12 @@ async function claudeRank({ apiKey, query, makers }) {
       max_tokens: 1200,
       temperature: 0,
       system:
-        "You are Artihubs Engineering Search. Match a user's natural-language need to ONLY the provided maker profiles. English is the canonical product language: summary, reason, and suggestedIntro must always be written in polished, concise English, regardless of the query language. Queries may be written in Korean, English, Japanese, or mixed language; interpret the intent semantically before ranking. When wantsKoreanCompanion is true, also provide concise Korean companion fields that support the English output without replacing it. Do not invent makers, capabilities, countries, or regions. If no provided maker is meaningfully relevant, return an empty matches array. Return strict JSON only.",
+        "You are the Artihubs discovery engine. Match a Seeker's natural-language need to ONLY the provided maker profiles. English is the canonical product language: summary, analysis, reason, and suggestedIntro must always be written in polished, concise English, regardless of the query language. Queries may be written in Korean, English, Japanese, or mixed language; interpret the intent semantically before ranking. When wantsKoreanCompanion is true, also provide concise Korean companion fields that support the English output without replacing it. Evidence rule: every match must include an evidence array of short phrases copied verbatim from that maker's provided fields (capability, field, tags, summary, region, country); never quote text that is not present in the profile, and base each reason only on that evidence. Do not invent makers, capabilities, countries, or regions. Honesty rule: if no provided maker is meaningfully relevant, return an empty matches array and say so plainly in the summary; never pad results. Clarification rule: if the need is too ambiguous to rank confidently and clarificationProvided is false, ask exactly one short clarifying question in clarifyingQuestion while still returning your best provisional matches; if clarificationProvided is true, treat clarification.answer as part of the need and never ask another question. Need analysis: fill analysis with at most 4 short bullet strings covering the interpreted goal, constraints, domain, and locale. Return strict JSON only.",
       messages: [
         {
           role: "user",
           content:
-            "Rank Artihubs Makers for this query. Return JSON with this exact shape: {\"summary\":\"short English search interpretation\",\"summaryKo\":\"optional Korean companion summary, or empty string\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"English reason why this maker matches\",\"reasonKo\":\"optional Korean companion reason, or empty string\",\"suggestedIntro\":\"English intro request angle\",\"suggestedIntroKo\":\"optional Korean companion intro angle, or empty string\"}]}. Use relevance from 0 to 1. Keep at most 8 matches. Keep only meaningfully relevant makers; do not pad the result list. Prioritize high-quality English wording first. If wantsKoreanCompanion is false, use empty strings for Korean companion fields.\n\n" +
+            "Rank Artihubs Makers for this need. Return JSON with this exact shape: {\"summary\":\"short English interpretation of the need\",\"summaryKo\":\"optional Korean companion summary, or empty string\",\"analysis\":[\"short English need-analysis bullet\"],\"analysisKo\":[\"optional Korean companion bullets, or empty array\"],\"clarifyingQuestion\":\"one short English question only when the need is too ambiguous, else empty string\",\"clarifyingQuestionKo\":\"Korean companion question, or empty string\",\"matches\":[{\"name\":\"maker name from provided list\",\"relevance\":0.0,\"reason\":\"English reason grounded only in the evidence phrases\",\"reasonKo\":\"optional Korean companion reason, or empty string\",\"evidence\":[\"verbatim phrase from this maker's profile fields\"],\"suggestedIntro\":\"English intro request angle\",\"suggestedIntroKo\":\"optional Korean companion intro angle, or empty string\"}]}. Use relevance from 0 to 1. Keep at most 8 matches and at most 4 analysis bullets and 4 evidence phrases per match. Keep only meaningfully relevant makers; do not pad the result list. Prioritize high-quality English wording first. If wantsKoreanCompanion is false, use empty strings and empty arrays for Korean companion fields.\n\n" +
             JSON.stringify(prompt)
         }
       ]
@@ -229,7 +298,21 @@ async function claudeRank({ apiKey, query, makers }) {
   return {
     summary: cleanText(parsed.summary || "Artihubs matched makers for the request.", 340),
     summaryKo: cleanText(parsed.summaryKo, 260),
+    analysis: cleanAnalysis(parsed.analysis),
+    analysisKo: cleanAnalysis(parsed.analysisKo),
+    // One clarification round max, enforced in code regardless of model output.
+    clarifyingQuestion: clarificationProvided ? "" : cleanText(parsed.clarifyingQuestion, 220),
+    clarifyingQuestionKo: clarificationProvided ? "" : cleanText(parsed.clarifyingQuestionKo, 200),
     matches: mergeClaudeMatches(makers, parsed.matches)
+  };
+}
+
+function arxEmptyExtras() {
+  return {
+    analysis: [],
+    analysisKo: [],
+    clarifyingQuestion: "",
+    clarifyingQuestionKo: ""
   };
 }
 
@@ -241,6 +324,7 @@ function unavailablePayload(profileSource) {
     profileSource,
     summary: "Artihubs search is temporarily unavailable.",
     summaryKo: "",
+    ...arxEmptyExtras(),
     matches: []
   };
 }
@@ -253,6 +337,7 @@ function fallbackPayload({ query, makers, profileSource, summary, summaryKo = ""
     profileSource,
     summary,
     summaryKo,
+    ...arxEmptyExtras(),
     matches: fallbackRank({ query, makers })
   };
 }
@@ -329,6 +414,14 @@ module.exports = async function handler(request, response) {
   }
 
   const query = String(payload.query || "").trim().slice(0, MAX_QUERY_LENGTH);
+  const rawClarification = payload.clarification && typeof payload.clarification === "object" ? payload.clarification : null;
+  const clarification = rawClarification
+    ? {
+        question: cleanText(rawClarification.question, 220),
+        answer: cleanText(rawClarification.answer, MAX_CLARIFICATION_LENGTH)
+      }
+    : null;
+  const clarificationProvided = Boolean(clarification && clarification.answer);
   let makers;
   let profileSource = "local";
   try {
@@ -360,6 +453,7 @@ module.exports = async function handler(request, response) {
     const emptyPayload = {
       summary: "Enter a natural-language request to search Artihubs.",
       summaryKo: "",
+      ...arxEmptyExtras(),
       matches: [],
       rankSource: "idle",
       degraded: false,
@@ -396,7 +490,7 @@ module.exports = async function handler(request, response) {
   }
 
   try {
-    const ranked = await claudeRank({ apiKey, query, makers });
+    const ranked = await claudeRank({ apiKey, query, makers, clarification, clarificationProvided });
     const claudePayload = { mode: "claude", rankSource: "claude", degraded: false, profileSource, ...ranked };
     await writeSearchQueryLog({
       query,

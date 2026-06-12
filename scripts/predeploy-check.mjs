@@ -59,6 +59,11 @@ const checks = [
     args: ["scripts/api-smoke-test.mjs"]
   },
   {
+    name: "arx-engine",
+    cwd: projectRoot,
+    args: ["scripts/arx-engine-smoke-test.mjs"]
+  },
+  {
     name: "migrations",
     cwd: workspaceRoot,
     args: ["docs/deployment/validate-migrations.mjs"],
