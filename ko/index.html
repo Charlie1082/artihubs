@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Artihubs | Beyond the Algorithm.</title>
-    <meta name="description" content="Artihubs는 메이커가 무엇을 만들 수 있는지 보여주고, 시커가 분야, 국가, 지역별로 실제 역량을 찾도록 돕습니다." />
+    <title>Artihubs | Maker Tag와 Request Tag</title>
+    <meta name="description" content="Artihubs는 Maker Tag, Request Tag, 지역 단위 역량 신호를 하나의 궤도 위에 정렬해 Maker와 Finder가 서로를 발견하도록 돕습니다." />
     <link rel="canonical" href="https://www.artihubs.com/ko/" />
     <link rel="alternate" hreflang="en" href="https://www.artihubs.com/" />
     <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/" />
@@ -17,8 +17,8 @@
     <meta name="theme-color" content="#05070b" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Artihubs" />
-    <meta property="og:title" content="Artihubs | Beyond the Algorithm." />
-    <meta property="og:description" content="Artihubs는 메이커가 무엇을 만들 수 있는지 보여주고, 시커가 분야, 국가, 지역별로 실제 역량을 찾도록 돕습니다." />
+    <meta property="og:title" content="Artihubs | Maker Tag와 Request Tag" />
+    <meta property="og:description" content="Artihubs는 Maker Tag, Request Tag, 지역 단위 역량 신호를 하나의 궤도 위에 정렬해 Maker와 Finder가 서로를 발견하도록 돕습니다." />
     <meta property="og:url" content="https://www.artihubs.com/ko/" />
     <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta property="og:image:width" content="1200" />
@@ -26,12 +26,13 @@
     <meta property="og:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
     <meta property="og:locale" content="ko_KR" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Artihubs | Beyond the Algorithm." />
-    <meta name="twitter:description" content="Artihubs는 메이커가 무엇을 만들 수 있는지 보여주고, 시커가 분야, 국가, 지역별로 실제 역량을 찾도록 돕습니다." />
+    <meta name="twitter:title" content="Artihubs | Maker Tag와 Request Tag" />
+    <meta name="twitter:description" content="Artihubs는 Maker Tag, Request Tag, 지역 단위 역량 신호를 하나의 궤도 위에 정렬해 Maker와 Finder가 서로를 발견하도록 돕습니다." />
     <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta name="twitter:image:alt" content="지역 단위로 안전하게 표시된 메이커 신호가 보이는 Artihubs Living Globe" />
     <link rel="stylesheet" href="../styles.css" />
     <script src="../home-orbit.js" defer></script>
+    <script src="../site.js" defer></script>
   </head>
   <body>
     <main class="page home-page">
@@ -41,16 +42,16 @@
           <span>Artihubs</span>
         </a>
         <div class="nav-links" aria-label="주요 내비게이션">
-          <a href="./living-globe-v2/">리빙 글로브</a>
-          <a href="./for-makers/">메이커</a>
-          <a href="./for-seekers/">시커</a>
-          <a href="./explore/">허브 탐색</a>
-          <a href="./login/">로그인</a>
-          <a href="./signup/">가입</a>
+          <a href="./living-globe-v2/">Globe Navigation</a>
+          <a href="./for-makers/">For Makers</a>
+          <a href="./for-seekers/">For Finders</a>
+          <a href="./explore/">Explore Hubs</a>
+          <a href="./login/">Sign in</a>
+          <a href="./signup/">Sign Up</a>
           <a class="language-link" href="../">English</a>
         </div>
         <div class="mobile-nav-actions">
-          <a class="mobile-join" href="./signup/">가입</a>
+          <div class="mobile-auth-pair"><a class="mobile-auth mobile-signin" href="./login/">Sign in</a><a class="mobile-auth mobile-signup" href="./signup/">Sign Up</a></div>
           <details class="mobile-menu">
             <summary aria-label="내비게이션 열기">
               <span></span>
@@ -58,11 +59,12 @@
               <span></span>
             </summary>
             <div class="mobile-menu-panel" aria-label="모바일 내비게이션">
-              <a href="./living-globe-v2/">리빙 글로브</a>
-              <a href="./explore/">허브 탐색</a>
-              <a href="./for-makers/">메이커</a>
-              <a href="./for-seekers/">시커</a>
-              <a href="./login/">로그인</a>
+              <a href="./living-globe-v2/">Globe Navigation</a>
+              <a href="./explore/">Explore Hubs</a>
+              <a href="./for-makers/">For Makers</a>
+              <a href="./for-seekers/">For Finders</a>
+              <a href="./login/">Sign in</a>
+              <a href="./signup/">Sign Up</a>
               <a class="language-link" href="../">English</a>
             </div>
           </details>
@@ -71,23 +73,29 @@
 
       <section class="home-hero" aria-labelledby="home-title">
         <div class="home-copy">
-          <p class="eyebrow home-desktop-eyebrow">Borderless maker discovery</p>
           <p class="eyebrow home-mobile-eyebrow">리빙 메이커 시그널</p>
           <h1 id="home-title">
-            <span class="home-desktop-title">필요한 역량을 가진 메이커를 발견하세요.</span>
-            <span class="home-mobile-title">역량이 살아있는 곳을 보세요.</span>
+            <span class="home-desktop-title">알고리즘 궤도 밖에서, 새로운 신호를 감지하였습니다.</span>
+            <span class="home-mobile-title">알고리즘 궤도 밖에서, 새로운 신호를 감지하였습니다.</span>
           </h1>
           <p class="lede">
-            <span class="home-desktop-copy">Artihubs는 소셜 알고리즘만으로는 찾기 어려운 독립 발명가, 1인 제조업자, 소프트웨어 빌더, 소규모 전문 팀을 역량과 지역, 목적 중심으로 연결하는 리빙 디스커버리 플랫폼입니다.</span>
-            <span class="home-mobile-copy">승인된 메이커마다 지역 단위의 안전한 신호가 Artihubs 발견 지도에 추가됩니다.</span>
+            <span class="home-desktop-copy">Artihubs는 흩어진 역량의 신호와 당신의 필요를 하나의 궤도 위에 정렬합니다.</span>
+            <span class="home-mobile-copy">Artihubs는 흩어진 역량의 신호와 당신의 필요를 하나의 궤도 위에 정렬합니다.</span>
           </p>
-          <div class="actions home-desktop-actions">
-            <a class="button primary" href="./living-globe-v2/">리빙 글로브 보기</a>
-            <a class="button secondary" href="./explore/">메이커 허브 탐색</a>
-          </div>
-          <div class="actions home-mobile-actions">
-            <a class="button primary" href="./living-globe-v2/">글로브 탐색</a>
-            <a class="button secondary" href="./explore/">메이커 허브 검색</a>
+          <div
+            class="home-signal-cta-slot"
+            data-home-signal
+            data-scanning="신호를 스캔하는 중..."
+            data-detected="새로운 가능성 패턴이 감지되었습니다."
+            data-check-label="신호 확인"
+            data-open-label="Living Globe 열기"
+            data-open-url="./living-globe-v2/"
+          >
+            <p class="home-signal-message" data-signal-message aria-live="polite" aria-atomic="true"></p>
+            <div class="home-signal-actions" data-signal-actions>
+              <button class="button primary" type="button" data-signal-check hidden>신호 확인</button>
+              <a class="button secondary" href="./living-globe-v2/" data-signal-open hidden>Living Globe 열기</a>
+            </div>
           </div>
           <dl class="home-stats" aria-label="Artihubs prototype signals">
             <div>
@@ -132,52 +140,92 @@
       <section class="home-band" aria-labelledby="paths-title">
         <div class="home-section-head">
           <p class="eyebrow">Three entry points</p>
-          <h2 id="paths-title">거래보다 먼저 해결해야 할 문제는, 맞는 사람을 찾는 일입니다.</h2>
-          <p>Artihubs는 발견에서 시작합니다. 이후 컨택, 샘플 전달, 간단한 계약, 구매 흐름까지 양쪽이 더 쉽게 움직일 수 있는 구조를 단계적으로 붙여갑니다.</p>
+          <h2 id="paths-title">창의적인 일에만 집중하세요</h2>
+          <p>당신의 창조물을 궤도에만 놓아주세요. 그 다음의 여정은 저희가 신호를 보내고 당신을 찾는 그들을 한 궤도에 초대하는것 뿐입니다.</p>
         </div>
         <div class="path-grid">
           <article class="path-card">
             <span class="path-number">01</span>
             <h3>For Makers</h3>
-            <p>무엇을 만들고, 요청이 들어오면 무엇을 만들 수 있으며, 어떤 지역의 신호로 표시될지 보여주세요.</p>
+            <p>당신에 대해 알려주세요. 여러분에게 제시하는 네임태그를 정성스럽게 작성하여 우리에게 건내주기만 하세요. Artihubs는 Maker Tag.를 세계 누구나 찾아볼 수있는 곳입니다.</p>
             <a class="button secondary" href="./for-makers/">메이커 관심 등록</a>
           </article>
           <article class="path-card">
             <span class="path-number">02</span>
-            <h3>For Seekers</h3>
-            <p>필요한 부품, 도구, 프로토타입, 소프트웨어 워크플로우, 수리 키트, 제작 역량을 구조화해서 요청하세요.</p>
-            <a class="button secondary" href="./for-seekers/">시커 요청 시작</a>
+            <h3>For Finders</h3>
+            <p>당신에게 필요한 것은 무엇인가요? 우리는 카테고리를 제공하지 않습니다.자유롭게 당신이 원하는 것을 손쉽게 찾아내세요. 나에게 필요한 Maker를 찾았다면 Request Tag.만 작성해 우리에게 건내 주세요. Artihubs를 통해 창조적인 그들과 이웃처럼 만나보세요.</p>
+            <a class="button secondary" href="./for-seekers/">Finder 요청 시작</a>
           </article>
           <article class="path-card">
             <span class="path-number">03</span>
             <h3>Explore Hubs</h3>
-            <p>분야와 지역으로 메이커를 탐색하세요. 지구본에서 밝아진 지역은 실제 디렉터리 탐색 경로가 됩니다.</p>
-            <a class="button secondary" href="./explore/">디렉터리 열기</a>
+            <p>신호가 발신되는 곳을 밝혀 두겠습니다. Globe Map을 돌려보고 눌러보세요. 당신이 원하는것을 위해 카테고리에 묶이지 마세요. 카테고리 대신 당신과 대화할 AI ARX(AI 아릭스) 에게 자유롭게 설명하고 물어보세요. 당신이 원하는것은 카테고리가 아니라 창의적인 대화에서 시작됩니다.</p>
+            <a class="button secondary" href="./explore/">Explore Hubs 열기</a>
           </article>
         </div>
+      </section>
+
+      <section class="home-band home-product-preview" aria-labelledby="product-preview-title">
+        <div class="home-section-head">
+          <p class="eyebrow">Product surfaces</p>
+          <h2 id="product-preview-title">Signals become working records.</h2>
+          <p>Artihubs는 역량, 지역 단위 정체성, 검토 상태, 구조화된 요청을 바탕으로 발견을 기록 가능한 표면으로 정리합니다.</p>
+        </div>
+        <div class="home-preview-grid">
+          <article class="artifact-panel maker-signal-card">
+            <div class="artifact-panel-head">
+              <span>Maker Tag.</span>
+              <strong>Quiet Forge Lab</strong>
+            </div>
+            <dl class="artifact-list">
+              <div><dt>역량</dt><dd>센서 하우징, 소형 픽스처</dd></div>
+              <div><dt>공개 지역</dt><dd>Korea / Seoul</dd></div>
+              <div><dt>상태</dt><dd>검토된 공개 신호</dd></div>
+            </dl>
+            <div class="signal-meter" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          </article>
+          <article class="artifact-panel request-blueprint-card">
+            <div class="artifact-panel-head">
+              <span>Request Tag.</span>
+              <strong>방수 센서 하우징</strong>
+            </div>
+            <dl class="artifact-list">
+              <div><dt>필요</dt><dd>소량 프로토타입 인클로저</dd></div>
+              <div><dt>제약</dt><dd>해양 밀폐, 샘플 배송</dd></div>
+              <div><dt>경로</dt><dd>하드웨어 프로토타입 Maker</dd></div>
+            </dl>
+            <div class="blueprint-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+          </article>
+        </div>
+        <ol class="home-review-timeline" aria-label="Artihubs review gate path">
+          <li><span>01</span><strong>Private draft</strong></li>
+          <li><span>02</span><strong>Review gate</strong></li>
+          <li><span>03</span><strong>Public signal</strong></li>
+          <li><span>04</span><strong>Structured inquiry</strong></li>
+        </ol>
       </section>
 
       <section class="home-band home-flow" aria-labelledby="flow-title">
         <div class="home-section-head">
           <p class="eyebrow">From signal to conversation</p>
-          <h2 id="flow-title">유명해지기 전부터 쓸모 있는 작업을 하는 사람들을 위해 설계합니다.</h2>
+          <h2 id="flow-title">실력과 신뢰는 창조물에 담고, 기회와 보증을 조회수와 알고리즘에 찾아서는 안 됩니다.</h2>
         </div>
         <div class="flow-rail">
           <div>
-            <strong>메이커가 나타납니다</strong>
-            <p>메이커는 역량 프로필을 추가하고 실제 지역을 Artihubs 신호로 밝힙니다.</p>
+            <strong>Maker의 신호</strong>
+            <p>Maker Tag.를 작성해주세요. 당신의 아이디어에 대한 이야기, 도구, 리드타임, 협업에 대해 기록해주세요. Artihubs는 복잡한 프로세스를 다양한 각도에서 지원하고 고민하겠습니다. 당신의 위대한 작품을 기대하겠습니다.</p>
           </div>
           <div>
-            <strong>시커가 검색합니다</strong>
-            <p>문제, 소재, 소프트웨어, 분야, 국가, 지역을 기준으로 필요한 역량을 찾습니다.</p>
+            <strong>Finder의 여정</strong>
+            <p>당신에게 필요한것을 찾아보세요. 문제를 해결해줄 Maker를 찾아내고 Request Tag.에 해결되지않는 문제점, 찾고있는 무언가를 적기만 하면됩니다. 나머지는 Artihubs가 고민하게 두세요. 복잡한 절차와 서류에 겁먹지 마세요. 당신의 위대한 여정을 응원합니다.</p>
           </div>
           <div>
-            <strong>요청이 정리됩니다</strong>
-            <p>어색한 콜드 DM 전에 Artihubs가 요청 내용을 구조화해 첫 대화를 준비합니다.</p>
+            <strong>Artihubs의 임무</strong>
+            <p>어떻게 하면 Maker와 Finder가 가까워 질수 있는지 연구합니다. 아이디어가 있고 발견이 있다면 우리가 해야 할일은 불필요한 Cold DM, 복잡한 설명, 샘플 요청서, 인도증, 수령증 등과 같은 다양한 서류 양식과 자동 작성기능을 플랫폼에서 제공할 예정입니다.</p>
           </div>
           <div>
-            <strong>다음 흐름을 붙입니다</strong>
-            <p>샘플 전달 기록, 계약 템플릿, 결제, 물류 지원은 이후 단계에서 확장할 수 있습니다.</p>
+            <strong>신뢰와 보증</strong>
+            <p>친목을 위한 여정이 아닙니다. 당신이 지불할 소중한 시간과 비용 사이에는 신뢰가 필요합니다. 우리는 Maker와 Finder의 만남의 장소 뿐만 아니라 신뢰할수 있는 절차로깅 , 문서 작성 및 기록, 프로세스 로깅 시스템으로 Artihubs를 통해 당신의 소중한 아이디어와 시간과 비용을 지킬수 있도록 끝없이 연구 하겠습니다.</p>
           </div>
         </div>
       </section>
@@ -185,18 +233,16 @@
       <section class="home-final" aria-labelledby="first-wave-title">
         <div>
           <p class="eyebrow">First wave</p>
-          <h2 id="first-wave-title">Artihubs의 첫 커뮤니티는 좋은 작업이 너무 자주 발견되지 못한다는 문제를 아는 사람들과 함께 시작합니다.</h2>
+          <h2 id="first-wave-title">필요한 사람과 만들 줄 아는 사람이 서로를 찾지 못하는 문제에서, Artihubs는 시작되었습니다.</h2>
         </div>
         <div class="home-final-actions">
-          <a class="button primary" href="./for-makers/">메이커로 참여</a>
-          <a class="button secondary" href="./for-seekers/">메이커 요청</a>
-          <a class="button secondary" href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+          <a class="button secondary" href="mailto:hello@artihubs.com">Contact Support</a>
         </div>
       </section>
 
       <footer class="footer">
         <p>Artihubs 프로토타입. 공개 위치 신호는 국가와 지역 단위에서 멈춥니다.</p>
-        <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        <a href="mailto:hello@artihubs.com">Contact Support</a>
       </footer>
     </main>
   </body>

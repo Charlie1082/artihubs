@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Artihubs | Borderless Maker Discovery</title>
-    <meta name="description" content="Artihubs helps independent makers become discoverable by capability and region, and helps seekers find people who can build, repair, prototype, or source specific work." />
+    <title>Artihubs | Capability Signals For Makers And Finders</title>
+    <meta name="description" content="Artihubs aligns Maker Tags, Request Tags, and region-safe capability signals so Makers and Finders can discover each other outside algorithmic popularity." />
     <link rel="canonical" href="https://www.artihubs.com/" />
     <link rel="alternate" hreflang="en" href="https://www.artihubs.com/" />
     <link rel="alternate" hreflang="ko" href="https://www.artihubs.com/ko/" />
@@ -16,8 +16,8 @@
     <meta name="theme-color" content="#05070b" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Artihubs" />
-    <meta property="og:title" content="Artihubs | Borderless Maker Discovery" />
-    <meta property="og:description" content="Artihubs helps independent makers become discoverable by capability and region, and helps seekers find people who can build, repair, prototype, or source specific work." />
+    <meta property="og:title" content="Artihubs | Capability Signals For Makers And Finders" />
+    <meta property="og:description" content="Artihubs aligns Maker Tags, Request Tags, and region-safe capability signals so Makers and Finders can discover each other outside algorithmic popularity." />
     <meta property="og:url" content="https://www.artihubs.com/" />
     <meta property="og:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta property="og:image:width" content="1200" />
@@ -25,8 +25,8 @@
     <meta property="og:image:alt" content="Artihubs Living Globe showing region-safe maker signals" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Artihubs | Borderless Maker Discovery" />
-    <meta name="twitter:description" content="Artihubs helps independent makers become discoverable by capability and region, and helps seekers find people who can build, repair, prototype, or source specific work." />
+    <meta name="twitter:title" content="Artihubs | Capability Signals For Makers And Finders" />
+    <meta name="twitter:description" content="Artihubs aligns Maker Tags, Request Tags, and region-safe capability signals so Makers and Finders can discover each other outside algorithmic popularity." />
     <meta name="twitter:image" content="https://www.artihubs.com/assets/seo/og-artihubs-living-globe-1200x630.png" />
     <meta name="twitter:image:alt" content="Artihubs Living Globe showing region-safe maker signals" />
     <script type="application/ld+json">
@@ -40,6 +40,7 @@
     </script>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./home-orbit.js" defer></script>
+    <script src="./site.js" defer></script>
   </head>
   <body>
     <main class="page home-page">
@@ -49,16 +50,16 @@
           <span>Artihubs</span>
         </a>
         <div class="nav-links" aria-label="Primary navigation">
-          <a href="./living-globe-v2/">Living Globe</a>
+          <a href="./living-globe-v2/">Globe Navigation</a>
           <a href="./for-makers/">For Makers</a>
-          <a href="./for-seekers/">For Seekers</a>
+          <a href="./for-seekers/">For Finders</a>
           <a href="./explore/">Explore Hubs</a>
           <a href="./login/">Sign in</a>
-          <a href="./signup/">Join</a>
+          <a href="./signup/">Sign Up</a>
           <a class="language-link" href="./ko/" lang="ko">한국어</a>
         </div>
         <div class="mobile-nav-actions">
-          <a class="mobile-join" href="./signup/">Join</a>
+          <div class="mobile-auth-pair"><a class="mobile-auth mobile-signin" href="./login/">Sign in</a><a class="mobile-auth mobile-signup" href="./signup/">Sign Up</a></div>
           <details class="mobile-menu">
             <summary aria-label="Open navigation">
               <span></span>
@@ -66,11 +67,12 @@
               <span></span>
             </summary>
             <div class="mobile-menu-panel" aria-label="Mobile navigation">
-              <a href="./living-globe-v2/">Living Globe</a>
+              <a href="./living-globe-v2/">Globe Navigation</a>
               <a href="./explore/">Explore Hubs</a>
               <a href="./for-makers/">For Makers</a>
-              <a href="./for-seekers/">For Seekers</a>
+              <a href="./for-seekers/">For Finders</a>
               <a href="./login/">Sign in</a>
+              <a href="./signup/">Sign Up</a>
               <a class="language-link" href="./ko/" lang="ko">한국어</a>
             </div>
           </details>
@@ -81,21 +83,27 @@
         <div class="home-copy">
           <p class="eyebrow home-mobile-eyebrow">Living Maker Signal</p>
           <h1 id="home-title">
-            <span class="home-desktop-title">Beyond the Algorithm.</span>
-            <span class="home-mobile-title">See where capability lives.</span>
+            <span class="home-desktop-title">Outside the algorithm's orbit, a new signal has been detected.</span>
+            <span class="home-mobile-title">Outside the algorithm's orbit, a new signal has been detected.</span>
           </h1>
           <p class="lede">
-            <span class="home-desktop-copy">Your work deserves discovery beyond the algorithm. Artihubs helps makers show what they can build, and helps seekers find real capabilities by field, country, and region.</span>
-            <span class="home-mobile-copy">Each approved maker adds a region-safe signal to Artihubs discovery.</span>
+            <span class="home-desktop-copy">Artihubs aligns scattered signals of capability and your need on a single orbit.</span>
+            <span class="home-mobile-copy">Artihubs aligns scattered signals of capability and your need on a single orbit.</span>
           </p>
-          <div class="actions home-desktop-actions">
-            <a class="button primary" href="./explore/">Explore maker hubs</a>
-            <a class="button secondary" href="./living-globe-v2/">Enter the living globe</a>
-            <a class="button secondary" href="./signup/">Join as a maker</a>
-          </div>
-          <div class="actions home-mobile-actions">
-            <a class="button primary" href="./living-globe-v2/">Explore the globe</a>
-            <a class="button secondary" href="./explore/">Search maker hubs</a>
+          <div
+            class="home-signal-cta-slot"
+            data-home-signal
+            data-scanning="Scanning signal..."
+            data-detected="New capability detected."
+            data-check-label="Check signal"
+            data-open-label="Open Living Globe"
+            data-open-url="./living-globe-v2/"
+          >
+            <p class="home-signal-message" data-signal-message aria-live="polite" aria-atomic="true"></p>
+            <div class="home-signal-actions" data-signal-actions>
+              <button class="button primary" type="button" data-signal-check hidden>Check signal</button>
+              <a class="button secondary" href="./living-globe-v2/" data-signal-open hidden>Open Living Globe</a>
+            </div>
           </div>
           <dl class="home-stats" aria-label="Artihubs prototype signals">
             <div>
@@ -147,27 +155,27 @@
       <section class="home-band" aria-labelledby="paths-title">
         <div class="home-section-head">
           <p class="eyebrow">Three entry points</p>
-          <h2 id="paths-title">The first problem is not payment. It is finding the right person.</h2>
-          <p>Artihubs begins with discovery, then gives both sides a clearer path toward contact, sample exchange, simple agreements, and future purchase workflows.</p>
+          <h2 id="paths-title">Focus on creating.</h2>
+          <p>Place your creation on the orbit. From there, Artihubs sends the signal and invites the people looking for you onto the same path.</p>
         </div>
         <div class="path-grid">
           <article class="path-card">
             <span class="path-number">01</span>
             <h3>For Makers</h3>
-            <p>Show what you make, what you can make on request, where your regional signal belongs, and which kinds of inquiries are worth your time.</p>
+            <p>Tell us about you. Carefully write the Maker Tag we present to you and hand it to us. Artihubs is where anyone in the world can discover your Maker Tag.</p>
             <a class="button secondary" href="./for-makers/">Register interest</a>
           </article>
           <article class="path-card">
             <span class="path-number">02</span>
-            <h3>For Seekers</h3>
-            <p>Describe the part, tool, prototype, software workflow, repair path, or production capability you need without relying on luck or platform algorithms.</p>
-            <a class="button secondary" href="./for-seekers/">Start a request</a>
+            <h3>For Finders</h3>
+            <p>What do you need? We do not begin with categories. Describe what you want freely and find what you need with less friction. When you find the Maker you need, hand us only the Request Tag. Meet creative people through Artihubs as if they were nearby.</p>
+            <a class="button secondary" href="./for-seekers/">Start a finder request</a>
           </article>
           <article class="path-card">
             <span class="path-number">03</span>
             <h3>Explore Hubs</h3>
-            <p>Browse makers by field and region. A lit place on the globe becomes a practical directory path for that country or local area.</p>
-            <a class="button secondary" href="./explore/">Open directory</a>
+            <p>We will keep the places sending signals visible. Turn the Globe Map and press into it. Do not let categories bind what you want. Instead of categories, explain it freely to AI ARX and ask. What you want starts not from a category, but from a creative conversation.</p>
+            <a class="button secondary" href="./explore/">Open Explore Hubs</a>
           </article>
         </div>
       </section>
@@ -181,7 +189,7 @@
         <div class="home-preview-grid">
           <article class="artifact-panel maker-signal-card">
             <div class="artifact-panel-head">
-              <span>Maker signal</span>
+              <span>Maker Tag.</span>
               <strong>Quiet Forge Lab</strong>
             </div>
             <dl class="artifact-list">
@@ -193,7 +201,7 @@
           </article>
           <article class="artifact-panel request-blueprint-card">
             <div class="artifact-panel-head">
-              <span>Seeker request</span>
+              <span>Request Tag.</span>
               <strong>Waterproof sensor housing</strong>
             </div>
             <dl class="artifact-list">
@@ -215,24 +223,24 @@
       <section class="home-band home-flow" aria-labelledby="flow-title">
         <div class="home-section-head">
           <p class="eyebrow">From signal to conversation</p>
-          <h2 id="flow-title">Built for substance, not celebrity.</h2>
+          <h2 id="flow-title">Skill and trust belong in the creation itself. Opportunity and assurance should not be searched for in view counts or algorithms.</h2>
         </div>
         <div class="flow-rail">
           <div>
-            <strong>Maker appears</strong>
-            <p>A maker adds a capability profile and turns a real region into a visible Artihubs signal.</p>
+            <strong>Maker signal</strong>
+            <p>Write your Maker Tag. Record the story of your idea, tools, lead time, and collaboration. Artihubs will keep studying how to support the complex process from multiple angles. We look forward to your great work.</p>
           </div>
           <div>
-            <strong>Seeker searches</strong>
-            <p>A seeker filters by problem, material, software, field, country, or region.</p>
+            <strong>Finder journey</strong>
+            <p>Find what you need. Find the Maker who can help solve the problem, then write the unresolved issue or what you are looking for in the Request Tag. Leave the rest for Artihubs to work through. Do not be intimidated by complex procedures or paperwork. We support your great journey.</p>
           </div>
           <div>
-            <strong>Intro request</strong>
-            <p>Artihubs captures the request in a structured format before either side starts a cold conversation.</p>
+            <strong>Artihubs mission</strong>
+            <p>We study how Makers and Finders can come closer. When there is an idea and a discovery, our work is to reduce unnecessary cold DMs, complex explanations, sample requests, delivery notes, receipts, and other documents by providing forms and automatic drafting functions in the platform.</p>
           </div>
           <div>
-            <strong>Future workflows</strong>
-            <p>Sample transfer records, contract templates, payment, and logistics support can be layered in later.</p>
+            <strong>Trust and assurance</strong>
+            <p>This is not a journey for casual networking. Between the time and cost you spend, trust is required. Artihubs will keep studying procedure logs, document drafting and records, and process logging systems so your ideas, time, and cost can be protected through a trustworthy process.</p>
           </div>
         </div>
       </section>
@@ -240,18 +248,16 @@
       <section class="home-final" aria-labelledby="first-wave-title">
         <div>
           <p class="eyebrow">First wave</p>
-          <h2 id="first-wave-title">The first Artihubs community is for makers and seekers who know that great work is often hard to discover.</h2>
+          <h2 id="first-wave-title">Artihubs began in the gap between need and makers.</h2>
         </div>
         <div class="home-final-actions">
-          <a class="button primary" href="./for-makers/">Join as a maker</a>
-          <a class="button secondary" href="./for-seekers/">Request a maker</a>
-          <a class="button secondary" href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+          <a class="button secondary" href="mailto:hello@artihubs.com">Contact Support</a>
         </div>
       </section>
 
       <footer class="footer">
         <p>Artihubs prototype. Public location signals stop at country and region.</p>
-        <a href="mailto:hello@artihubs.com">hello@artihubs.com</a>
+        <a href="mailto:hello@artihubs.com">Contact Support</a>
       </footer>
     </main>
   </body>

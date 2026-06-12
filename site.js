@@ -109,6 +109,72 @@
     return ["", "localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname);
   }
 
+  function initHomeSignalSequence() {
+    const slots = document.querySelectorAll("[data-home-signal]");
+    if (!slots.length) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    slots.forEach((slot) => {
+      const message = slot.querySelector("[data-signal-message]");
+      const checkButton = slot.querySelector("[data-signal-check]");
+      const openLink = slot.querySelector("[data-signal-open]");
+      if (!message || !checkButton || !openLink) return;
+
+      const timers = [];
+      const scanning = slot.dataset.scanning || "Scanning signal...";
+      const detected = slot.dataset.detected || "New capability detected.";
+      const checkLabel = slot.dataset.checkLabel || "Check signal";
+      const openLabel = slot.dataset.openLabel || "Open Living Globe";
+      const openUrl = slot.dataset.openUrl || "./living-globe-v2/";
+
+      checkButton.textContent = checkLabel;
+      openLink.textContent = openLabel;
+      openLink.href = openUrl;
+
+      function clearTimers() {
+        while (timers.length) window.clearTimeout(timers.pop());
+      }
+
+      function setSlotState(state, text) {
+        slot.classList.remove("is-scanning", "is-fading", "is-detected", "is-open-ready");
+        if (state) slot.classList.add(state);
+        message.textContent = text || "";
+      }
+
+      function revealDetected() {
+        setSlotState("is-detected", detected);
+      }
+
+      checkButton.addEventListener("click", () => {
+        slot.classList.add("is-open-ready");
+        openLink.hidden = false;
+      });
+
+      if (reduceMotion) {
+        revealDetected();
+        checkButton.hidden = false;
+        return;
+      }
+
+      timers.push(window.setTimeout(() => {
+        setSlotState("is-scanning", scanning);
+      }, 10000));
+
+      timers.push(window.setTimeout(() => {
+        slot.classList.add("is-fading");
+        timers.push(window.setTimeout(revealDetected, 400));
+      }, 16000));
+
+      timers.push(window.setTimeout(() => {
+        checkButton.hidden = false;
+      }, 20000));
+
+      window.addEventListener("pagehide", clearTimers, { once: true });
+      window.addEventListener("beforeunload", clearTimers, { once: true });
+    });
+  }
+
   async function submitIntake(payload) {
     const response = await fetch("/api/v1/intake", {
       method: "POST",
@@ -125,6 +191,8 @@
     return response.json();
   }
 
+  initHomeSignalSequence();
+
   document.querySelectorAll("[data-intake-form]").forEach((form) => {
     const status = form.querySelector("[data-form-status]");
     attachTurnstile(form);
@@ -138,8 +206,8 @@
         await submitIntake(payload);
         if (status) {
           status.textContent = t(
-            "Received. Artihubs will follow up from hello@artihubs.com.",
-            "접수되었습니다. Artihubs가 hello@artihubs.com 주소에서 연락드립니다."
+            "Received. Artihubs will follow up through Contact Support.",
+            "접수되었습니다. Artihubs가 Contact Support 경로로 연락드립니다."
           );
         }
         form.reset();
