@@ -89,7 +89,7 @@
             <span>요청</span>
             <strong>한국 인근 방수 센서 하우징</strong>
           </div>
-          <div class="workbench-filters" aria-label="Region-safe filter preview">
+          <div class="workbench-filters" aria-label="국가/지역 단위 필터 미리보기">
             <span>국가: 유연함</span>
             <span>분야: 하드웨어</span>
             <span>상태: 검토됨</span>
@@ -118,7 +118,7 @@
             <label class="sr-only" for="ai-search-input">자연어 메이커 검색</label>
             <textarea id="ai-search-input" name="query" placeholder="예: 해양 센서용 방수 하우징을 만들 수 있는 소규모 팀이 필요합니다. 가능하면 한국이나 인근 지역이면 좋겠습니다." rows="4"></textarea>
             <div class="ai-search-actions">
-              <button class="button primary" type="submit">검색 Artihubs</button>
+              <button class="button primary" type="submit">Artihubs 검색</button>
               <button class="button secondary" type="button" id="clear-search">지우기</button>
             </div>
           </form>
@@ -134,7 +134,7 @@
             <div>
               <p class="eyebrow">추천 매칭</p>
               <h2 id="search-heading">현재 Artihubs 메이커</h2>
-              <p id="search-summary">문의 in natural language, or browse the current 프로토타입 maker set.</p>
+              <p id="search-summary">자연어로 물어보거나 현재 프로토타입 메이커 목록을 둘러보세요.</p>
               <p class="summary-companion" id="search-summary-ko" lang="ko" hidden></p>
             </div>
             <div class="view-switch" aria-label="결과 보기">
@@ -151,8 +151,8 @@
         <div class="tab-panel" id="ask-panel" role="tabpanel" aria-labelledby="ask-tab" hidden>
           <section class="two-grid ask-grid">
             <div>
-              <p class="eyebrow">요청 an intro</p>
-              <h2>문의 Artihubs to help start the conversation.</h2>
+              <p class="eyebrow">소개 요청</p>
+              <h2>첫 대화를 시작할 수 있게 Artihubs에 요청하세요.</h2>
               <p class="lede">연락해 볼 만한 메이커를 찾았지만 첫 메시지를 정리해야 할 때 사용합니다. Artihubs는 양쪽이 협의를 시작하기 전에 필요한 맥락을 먼저 모읍니다.</p>
             </div>
             <form class="form-panel" data-intake-form data-intake-type="intro">
@@ -170,11 +170,11 @@
                   <input id="intro-field" name="field" placeholder="Quiet Forge Lab, 방수 하우징, 수리 키트" required />
                 </div>
                 <div class="field full">
-                  <label for="intro-message">요청 context</label>
+                  <label for="intro-message">요청 배경</label>
                   <textarea id="intro-message" name="message" required></textarea>
                 </div>
               </div>
-              <button class="button primary" type="submit">요청 intro</button>
+              <button class="button primary" type="submit">소개 요청</button>
               <p class="form-status" data-form-status></p>
             </form>
           </section>
@@ -182,7 +182,7 @@
       </section>
 
       <footer class="footer">
-        <p>Explore uses approved public maker profiles only. Intake submissions are private until 검토됨 and published.</p>
+        <p>Explore는 승인된 공개 메이커 프로필만 사용합니다. 제출된 요청은 검토 후 공개되기 전까지 비공개입니다.</p>
         <a href="../living-globe-v2/">리빙 글로브 열기</a>
       </footer>
     </main>

@@ -1,5 +1,7 @@
 (function () {
   const storageKey = "artihubs_prototype_intake";
+  const isKoreanMode = document.documentElement.lang === "ko" || window.location.pathname.startsWith("/ko/");
+  const t = (en, ko) => (isKoreanMode ? ko : en);
   const turnstileSiteKey = document.querySelector('meta[name="turnstile-site-key"]')?.content?.trim();
   let turnstileScriptPromise = null;
 
@@ -14,7 +16,7 @@
       script.async = true;
       script.defer = true;
       script.onload = () => resolve(true);
-      script.onerror = () => reject(new Error("Turnstile could not be loaded."));
+      script.onerror = () => reject(new Error(t("Turnstile could not be loaded.", "Turnstile을 불러올 수 없습니다.")));
       document.head.appendChild(script);
     });
 
@@ -117,7 +119,7 @@
     });
 
     if (!response.ok) {
-      throw new Error("Remote intake is not available yet.");
+      throw new Error(t("Remote intake is not available yet.", "원격 접수는 아직 사용할 수 없습니다."));
     }
 
     return response.json();
@@ -130,11 +132,16 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const payload = collectFormData(form);
-      if (status) status.textContent = "Submitting...";
+      if (status) status.textContent = t("Submitting...", "제출 중...");
 
       try {
         await submitIntake(payload);
-        if (status) status.textContent = "Received. Artihubs will follow up from hello@artihubs.com.";
+        if (status) {
+          status.textContent = t(
+            "Received. Artihubs will follow up from hello@artihubs.com.",
+            "접수되었습니다. Artihubs가 hello@artihubs.com 주소에서 연락드립니다."
+          );
+        }
         form.reset();
       } catch (error) {
         if (isLocalPreview()) {
@@ -142,13 +149,24 @@
           if (status) {
             status.textContent =
               saved
-                ? "Prototype saved locally. Production deployment will store this in the Artihubs intake database."
-                : "Local prototype storage is unavailable. Please try again later.";
+                ? t(
+                  "Prototype saved locally. Production deployment will store this in the Artihubs intake database.",
+                  "프로토타입 항목이 로컬에 저장되었습니다. 프로덕션 배포에서는 Artihubs 접수 데이터베이스에 저장됩니다."
+                )
+                : t(
+                  "Local prototype storage is unavailable. Please try again later.",
+                  "로컬 프로토타입 저장소를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요."
+                );
           }
           return;
         }
 
-        if (status) status.textContent = "Artihubs intake is temporarily unavailable. Please try again later.";
+        if (status) {
+          status.textContent = t(
+            "Artihubs intake is temporarily unavailable. Please try again later.",
+            "Artihubs 접수가 일시적으로 중단되었습니다. 잠시 후 다시 시도해 주세요."
+          );
+        }
       }
     });
   });

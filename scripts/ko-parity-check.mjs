@@ -19,6 +19,13 @@ const pages = [
 ];
 
 const internalSlugs = pages.filter((page) => page.slug).map((page) => page.slug);
+const koLeakageGuardFiles = new Set([
+  "ko/signup/index.html",
+  "ko/for-makers/index.html",
+  "ko/for-seekers/index.html",
+  "ko/explore/index.html",
+  "ko/account/index.html",
+]);
 const failures = [];
 
 function read(relativePath) {
@@ -50,6 +57,173 @@ for (const page of pages) {
 
   if (/ca불가nical|k불가w/.test(ko)) {
     failures.push({ file: page.koFile, reason: "known-ko-generation-token-corruption" });
+  }
+}
+
+// --- KO visible-copy leakage guard (AQA-0012-01 rework requirement) ---
+// Flags ordinary English interface copy and corrupted Latin/Hangul hybrid
+// tokens in /ko/* visible text, outside the AL-0056 keep-English glossary.
+
+const koAllowedPhrases = [
+  "Beyond the Algorithm.",
+  "Living Globe",
+  "Explore Hubs",
+  "For Makers",
+  "For Seekers",
+  "Quiet Forge Lab",
+  "Hanbit Interface",
+  "Harbor Microfactory",
+  "Patchworks Motion",
+  "Signal Loom",
+  "Lone Star Fixtures",
+  "Banyan MicroWorks",
+  "Open Loom Studio",
+  "Machi Repair Works",
+  "Northline Repair",
+  "Campo Modular",
+];
+
+const koAllowedWords = new Set([
+  "artihubs",
+  "explore",
+  "maker",
+  "makers",
+  "seeker",
+  "seekers",
+  "english",
+  "ai",
+  "dm",
+  "cad",
+  "cnc",
+  "auth",
+  "intake",
+  "ok",
+]);
+
+const dynamicScriptRequirements = [
+  {
+    file: "auth-flow.js",
+    markers: [
+      "isKoreanMode",
+      "올바른 이메일 주소",
+      "비공개 계정을 만드는 중",
+      "데모 계정이 생성되었습니다",
+      "비밀번호 재설정 이메일",
+    ],
+  },
+  {
+    file: "account/account.js",
+    markers: [
+      "isKoreanMode",
+      "로그아웃 상태",
+      "계정 만들기",
+      "로그인 중",
+      "서버 Auth 확인 중",
+      "로그아웃되었습니다",
+    ],
+  },
+  {
+    file: "site.js",
+    markers: [
+      "isKoreanMode",
+      "제출 중",
+      "접수되었습니다",
+      "원격 접수는 아직 사용할 수 없습니다",
+      "Artihubs 접수가 일시적으로 중단되었습니다",
+    ],
+  },
+  {
+    file: "explore/explore.js",
+    markers: [
+      "isKoreanMode",
+      "Artihubs 검색 중",
+      "아직 매칭이 없습니다",
+      "메이커 데이터를 불러오지 못했습니다",
+      "Artihubs가 이 검색을 완료하지 못했습니다",
+    ],
+  },
+];
+
+function visibleSegments(html) {
+  const body = (html.split(/<body[^>]*>/i)[1] || html).split(/<\/body>/i)[0] || "";
+  const withoutBlocks = body
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ");
+
+  const segments = [];
+  for (const match of withoutBlocks.matchAll(/>([^<>]+)</g)) {
+    const text = match[1].replace(/\s+/g, " ").trim();
+    if (text) segments.push(text);
+  }
+  for (const match of withoutBlocks.matchAll(/(?:placeholder|aria-label|alt|title)="([^"]*)"/g)) {
+    const text = match[1].replace(/\s+/g, " ").trim();
+    if (text) segments.push(text);
+  }
+  return segments;
+}
+
+function stripAllowed(segment) {
+  let result = segment
+    .replace(/[\w.+-]+@[\w.-]+\.\w+/g, " ")
+    .replace(/https?:\/\/\S+/g, " ");
+  for (const phrase of koAllowedPhrases) {
+    result = result.split(phrase).join(" ");
+  }
+  return result;
+}
+
+function checkKoVisibleCopy(file, html) {
+  for (const rawSegment of visibleSegments(html)) {
+    const segment = stripAllowed(rawSegment);
+
+    // Hangul immediately followed by Latin is never natural Korean spacing.
+    if (/[가-힣][A-Za-z]/.test(segment)) {
+      failures.push({ file, reason: "ko-corrupted-hybrid-token", segment: rawSegment.slice(0, 120) });
+      continue;
+    }
+
+    // Latin immediately followed by Hangul is only natural for glossary stems
+    // taking a Korean particle (e.g. "Artihubs가", "Explore는").
+    let corrupted = false;
+    for (const match of segment.matchAll(/([A-Za-z]+)(?=[가-힣])/g)) {
+      if (!koAllowedWords.has(match[1].toLowerCase())) {
+        failures.push({ file, reason: "ko-corrupted-hybrid-token", segment: rawSegment.slice(0, 120), token: match[1] });
+        corrupted = true;
+        break;
+      }
+    }
+    if (corrupted) continue;
+
+    // Any standalone English word outside the glossary is visible leakage.
+    const tokens = segment.split(/\s+/);
+    const leaks = [];
+    for (const token of tokens) {
+      const word = token.replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, "");
+      if (!word || !/^[A-Za-z]+$/.test(word)) continue;
+      if (/^[A-Z]{1,3}$/.test(word)) continue;
+      if (!koAllowedWords.has(word.toLowerCase())) leaks.push(word);
+    }
+    if (leaks.length) {
+      failures.push({ file, reason: "ko-visible-english-leak", segment: rawSegment.slice(0, 120), words: leaks.slice(0, 8) });
+    }
+  }
+}
+
+for (const page of pages) {
+  if (!koLeakageGuardFiles.has(page.koFile)) continue;
+  const koPath = path.join(projectRoot, page.koFile);
+  if (!fs.existsSync(koPath)) continue;
+  checkKoVisibleCopy(page.koFile, fs.readFileSync(koPath, "utf8"));
+}
+
+for (const { file, markers } of dynamicScriptRequirements) {
+  const source = read(file);
+  if (!source) continue;
+  for (const marker of markers) {
+    if (!source.includes(marker)) {
+      failures.push({ file, reason: "missing-ko-dynamic-string-coverage", expected: marker });
+    }
   }
 }
 

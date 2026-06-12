@@ -1,6 +1,12 @@
+const isKoreanMode = document.documentElement.lang === "ko" || window.location.pathname.startsWith("/ko/");
+const t = (en, ko) => (isKoreanMode ? ko : en);
+
 let currentMatches = [];
 let currentView = "cards";
-let currentSummary = "Ask in natural language, or browse the current prototype maker set.";
+let currentSummary = t(
+  "Ask in natural language, or browse the current prototype maker set.",
+  "자연어로 물어보거나 현재 프로토타입 메이커 목록을 둘러보세요."
+);
 let currentSummaryKo = "";
 let searchSequence = 0;
 
@@ -37,8 +43,10 @@ function markerFor(maker) {
 }
 
 function renderMatchCard(maker) {
-  const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}% match` : "Prototype profile";
-  const sourceLabel = "Matched by Artihubs";
+  const relevance = maker.relevance
+    ? t(`${Math.round(maker.relevance * 100)}% match`, `${Math.round(maker.relevance * 100)}% 매칭`)
+    : t("Prototype profile", "프로토타입 프로필");
+  const sourceLabel = t("Matched by Artihubs", "Artihubs 매칭");
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -55,19 +63,19 @@ function renderMatchCard(maker) {
       <p class="match-score"><span>${sourceLabel}</span><strong>${relevance}</strong></p>
       <p><strong>${escapeHtml(maker.capability)}</strong></p>
       <p>${escapeHtml(maker.summary)}</p>
-      <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || relevance)}</p>
+      <p class="match-reason"><span>${t("AI match note", "AI 매칭 메모")}</span>${escapeHtml(maker.reason || relevance)}</p>
       ${koreanNote}
       <div class="tag-row">
         ${(maker.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}
       </div>
-      <button class="button secondary" type="button" data-intro="${introValue}">Ask about this maker</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">${t("Ask about this maker", "이 메이커에 대해 문의")}</button>
     </article>
   `;
 }
 
 function renderMatchRow(maker) {
-  const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : "profile";
-  const sourceLabel = "Matched by Artihubs";
+  const relevance = maker.relevance ? `${Math.round(maker.relevance * 100)}%` : t("profile", "프로필");
+  const sourceLabel = t("Matched by Artihubs", "Artihubs 매칭");
   const introValue = escapeHtml(`${maker.name} - ${maker.capability}`);
   const koreanNote = maker.reasonKo
     ? `<p class="match-reason-ko" lang="ko"><span>한국어 참고</span>${escapeHtml(maker.reasonKo)}</p>`
@@ -79,10 +87,10 @@ function renderMatchRow(maker) {
         <p class="eyebrow">${escapeHtml(maker.country)} / ${escapeHtml(maker.region)} · ${sourceLabel} · ${relevance}</p>
         <h3>${escapeHtml(maker.name)}</h3>
         <p><strong>${escapeHtml(maker.capability)}</strong> · ${escapeHtml(maker.summary)}</p>
-        <p class="match-reason"><span>AI match note</span>${escapeHtml(maker.reason || "Artihubs matched this maker to the request.")}</p>
+        <p class="match-reason"><span>${t("AI match note", "AI 매칭 메모")}</span>${escapeHtml(maker.reason || t("Artihubs matched this maker to the request.", "Artihubs가 이 메이커를 요청과 매칭했습니다."))}</p>
         ${koreanNote}
       </div>
-      <button class="button secondary" type="button" data-intro="${introValue}">Ask</button>
+      <button class="button secondary" type="button" data-intro="${introValue}">${t("Ask", "문의")}</button>
     </article>
   `;
 }
@@ -94,7 +102,9 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
   grid.classList.toggle("is-list-view", currentView === "list");
   grid.innerHTML = matches.map((maker) => (currentView === "list" ? renderMatchRow(maker) : renderMatchCard(maker))).join("");
   emptyState.classList.toggle("is-visible", matches.length === 0);
-  searchHeading.textContent = matches.length ? `${matches.length} Artihubs match${matches.length === 1 ? "" : "es"}` : "No matches yet";
+  searchHeading.textContent = matches.length
+    ? t(`${matches.length} Artihubs match${matches.length === 1 ? "" : "es"}`, `Artihubs 매칭 ${matches.length}건`)
+    : t("No matches yet", "아직 매칭이 없습니다");
   searchSummary.textContent = currentSummary;
   if (searchSummaryKo) {
     searchSummaryKo.textContent = currentSummaryKo;
@@ -104,7 +114,7 @@ function renderMatches(matches, summary = currentSummary, summaryKo = currentSum
 
 async function searchMakers(query) {
   const sequence = ++searchSequence;
-  if (searchStatus) searchStatus.textContent = query ? "Searching Artihubs..." : "";
+  if (searchStatus) searchStatus.textContent = query ? t("Searching Artihubs...", "Artihubs 검색 중...") : "";
 
   try {
     const response = await fetch("/api/v1/search", {
@@ -116,20 +126,27 @@ async function searchMakers(query) {
     const data = await response.json().catch(() => ({}));
     if (sequence !== searchSequence) return;
     if (!response.ok || data.ok === false) {
-      throw new Error(data.error?.message || data.error || "Artihubs search is temporarily unavailable.");
+      throw new Error(data.error?.message || data.error || t("Artihubs search is temporarily unavailable.", "Artihubs 검색이 일시적으로 중단되었습니다."));
     }
-    renderMatches(data.matches || [], data.summary, data.summaryKo);
+    if (isKoreanMode) {
+      renderMatches(data.matches || [], data.summaryKo || data.summary, "");
+    } else {
+      renderMatches(data.matches || [], data.summary, data.summaryKo);
+    }
     if (searchStatus) {
       searchStatus.textContent = query
         ? data.degraded
-          ? "Local prototype ranking is active while AI search is unavailable."
-          : "Matched by Artihubs."
-        : "Artihubs search is ready.";
+          ? t(
+            "Local prototype ranking is active while AI search is unavailable.",
+            "AI 검색을 사용할 수 없는 동안 로컬 프로토타입 순위가 적용됩니다."
+          )
+          : t("Matched by Artihubs.", "Artihubs가 매칭했습니다.")
+        : t("Artihubs search is ready.", "Artihubs 검색이 준비되었습니다.");
     }
   } catch (error) {
     if (sequence !== searchSequence) return;
     renderMatches([], error.message, "");
-    if (searchStatus) searchStatus.textContent = "Artihubs could not complete this search.";
+    if (searchStatus) searchStatus.textContent = t("Artihubs could not complete this search.", "Artihubs가 이 검색을 완료하지 못했습니다.");
   }
 }
 
@@ -153,7 +170,7 @@ function applyUrlContext() {
   const params = new URLSearchParams(window.location.search);
   const parts = [params.get("field"), params.get("region"), params.get("country")].filter(Boolean);
   if (parts.length) {
-    searchInput.value = `Find makers for ${parts.join(" in ")}.`;
+    searchInput.value = t(`Find makers for ${parts.join(" in ")}.`, `${parts.join(" / ")} 메이커를 찾아주세요.`);
   }
 }
 
@@ -202,5 +219,5 @@ grid.addEventListener("click", (event) => {
 
 init().catch((error) => {
   console.error(error);
-  if (searchStatus) searchStatus.textContent = "Maker data could not be loaded.";
+  if (searchStatus) searchStatus.textContent = t("Maker data could not be loaded.", "메이커 데이터를 불러오지 못했습니다.");
 });

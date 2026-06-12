@@ -87,12 +87,12 @@
           <h2 id="session-title">로그아웃 상태</h2>
           <div class="account-meta" id="account-session-details">
             <div><span>모드</span><strong>없음</strong></div>
-            <div><span>Email</span><strong>-</strong></div>
+            <div><span>이메일</span><strong>-</strong></div>
             <div><span>공개 등록</span><strong>비활성</strong></div>
           </div>
           <div class="account-panel-actions">
             <button class="button secondary" id="check-server-auth" type="button">서버 Auth 확인</button>
-            <button class="button secondary" id="sign-out" type="button">Sign out</button>
+            <button class="button secondary" id="sign-out" type="button">로그아웃</button>
           </div>
           <p class="form-status" id="server-auth-status" aria-live="polite"></p>
         </aside>
@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <div class="tab-bar auth-tabs" role="tablist" aria-label="계정 접근 mode">
+          <div class="tab-bar auth-tabs" role="tablist" aria-label="계정 접근 모드">
             <button class="tab-button is-active" id="signup-tab" type="button" role="tab" aria-selected="true" data-auth-mode="signup">가입</button>
             <button class="tab-button" id="login-tab" type="button" role="tab" aria-selected="false" data-auth-mode="login">로그인</button>
           </div>
@@ -119,15 +119,15 @@
                 <input id="account-display-name" name="displayName" autocomplete="name" />
               </div>
               <div class="field">
-                <label for="account-email">Email</label>
+                <label for="account-email">이메일</label>
                 <input id="account-email" name="email" type="email" autocomplete="email" required />
               </div>
               <div class="field">
-                <label for="account-password">Password</label>
+                <label for="account-password">비밀번호</label>
                 <input id="account-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
               </div>
             </div>
-            <button class="button primary" id="account-submit" type="submit">Create account</button>
+            <button class="button primary" id="account-submit" type="submit">계정 만들기</button>
             <p class="form-status" id="account-form-status" aria-live="polite"></p>
           </form>
         </div>

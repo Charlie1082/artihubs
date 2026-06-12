@@ -3,13 +3,15 @@
   const sessionKey = "artihubs_demo_session";
   const serverTokenKey = "artihubs_server_access_token";
   const validIntents = new Set(["maker", "seeker"]);
+  const isKoreanMode = document.documentElement.lang === "ko" || window.location.pathname.startsWith("/ko/");
+  const t = (en, ko) => (isKoreanMode ? ko : en);
 
   function normalizeEmail(value) {
     return String(value || "").trim().toLowerCase();
   }
 
   function displayNameFrom(email) {
-    return email.split("@")[0].replace(/[-_.]+/g, " ").trim() || "Artihubs Member";
+    return email.split("@")[0].replace(/[-_.]+/g, " ").trim() || t("Artihubs Member", "Artihubs 회원");
   }
 
   function emailDomain(email) {
@@ -18,7 +20,7 @@
 
   function maskEmail(email) {
     const [name, domain] = email.split("@");
-    if (!domain) return "demo account";
+    if (!domain) return t("demo account", "데모 계정");
     return `${name.slice(0, 1) || "a"}***@${domain}`;
   }
 
@@ -78,12 +80,12 @@
 
   function validateAuthPayload(payload, status) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-      setStatus(status, "Enter a valid email address.");
+      setStatus(status, t("Enter a valid email address.", "올바른 이메일 주소를 입력하세요."));
       return false;
     }
 
     if (payload.password.length < 8) {
-      setStatus(status, "Password must be at least 8 characters.");
+      setStatus(status, t("Password must be at least 8 characters.", "비밀번호는 8자 이상이어야 합니다."));
       return false;
     }
 
@@ -98,7 +100,7 @@
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const error = new Error(body.error?.message || "Authentication request failed.");
+      const error = new Error(body.error?.message || t("Authentication request failed.", "인증 요청을 완료할 수 없습니다."));
       error.code = body.error?.code || "AUTH_FAILED";
       error.status = response.status;
       throw error;
@@ -139,10 +141,10 @@
   async function localLogin(payload) {
     const emailHash = await emailFingerprint(payload.email);
     const account = readJson(accountsKey, []).find((item) => item.emailHash === emailHash);
-    if (!account) throw new Error("No local demo account exists for this email.");
-    if (!account.passwordSalt || !account.passwordHash) throw new Error("This local demo account must be recreated before login.");
+    if (!account) throw new Error(t("No local demo account exists for this email.", "이 이메일로 만든 로컬 데모 계정이 없습니다."));
+    if (!account.passwordSalt || !account.passwordHash) throw new Error(t("This local demo account must be recreated before login.", "로그인 전에 이 로컬 데모 계정을 다시 만들어야 합니다."));
     const attemptedHash = await passwordVerifier(payload.password, account.passwordSalt);
-    if (attemptedHash !== account.passwordHash) throw new Error("Email or password is incorrect for this local demo account.");
+    if (attemptedHash !== account.passwordHash) throw new Error(t("Email or password is incorrect for this local demo account.", "이 로컬 데모 계정의 이메일 또는 비밀번호가 올바르지 않습니다."));
     return openDemoSession(account);
   }
 
@@ -180,7 +182,7 @@
   async function serverLogin(payload) {
     const body = await postAuth("/api/v1/auth/login", payload);
     const token = body.data?.session?.accessToken;
-    if (!token) throw new Error("Server did not issue a usable session.");
+    if (!token) throw new Error(t("Server did not issue a usable session.", "서버에서 사용할 수 있는 세션이 발급되지 않았습니다."));
     sessionStorage.setItem(serverTokenKey, token);
     localStorage.removeItem(sessionKey);
     return {
@@ -193,7 +195,7 @@
   }
 
   function welcomeUrl(intent) {
-    const target = new URL("/welcome/", window.location.origin);
+    const target = new URL(isKoreanMode ? "/ko/welcome/" : "/welcome/", window.location.origin);
     target.searchParams.set("intent", validIntents.has(intent) ? intent : "maker");
     return target.toString();
   }
@@ -217,7 +219,7 @@
       if (!validateAuthPayload(payload, status)) return;
 
       setSubmitState(submit, true);
-      setStatus(status, "Creating private account...");
+      setStatus(status, t("Creating private account...", "비공개 계정을 만드는 중..."));
 
       try {
         let session = null;
@@ -229,14 +231,14 @@
 
         if (!session) {
           session = await localSignup(payload);
-          setStatus(status, "Demo account created. Profile remains private.");
+          setStatus(status, t("Demo account created. Profile remains private.", "데모 계정이 생성되었습니다. 프로필은 비공개로 유지됩니다."));
         } else {
-          setStatus(status, "Server account created. Profile remains private.");
+          setStatus(status, t("Server account created. Profile remains private.", "서버 계정이 생성되었습니다. 프로필은 비공개로 유지됩니다."));
         }
 
         window.location.href = welcomeUrl(session.roleIntent);
       } catch (error) {
-        setStatus(status, error.message || "Signup could not be completed.");
+        setStatus(status, error.message || t("Signup could not be completed.", "가입을 완료할 수 없습니다."));
       } finally {
         setSubmitState(submit, false);
       }
@@ -251,7 +253,10 @@
     const forgot = document.querySelector("[data-forgot-password]");
 
     forgot?.addEventListener("click", () => {
-      setStatus(status, "Password reset email is reserved for the validated transactional email setup.");
+      setStatus(status, t(
+        "Password reset email is reserved for the validated transactional email setup.",
+        "비밀번호 재설정 이메일은 검증된 발송 설정이 준비된 후 제공될 예정입니다."
+      ));
     });
 
     form.addEventListener("submit", async (event) => {
@@ -265,7 +270,7 @@
       if (!validateAuthPayload({ ...payload, displayName: "" }, status)) return;
 
       setSubmitState(submit, true);
-      setStatus(status, "Signing in...");
+      setStatus(status, t("Signing in...", "로그인 중..."));
 
       try {
         let session = null;
@@ -277,14 +282,14 @@
 
         if (!session) {
           session = await localLogin(payload);
-          setStatus(status, "Demo login complete.");
+          setStatus(status, t("Demo login complete.", "데모 로그인이 완료되었습니다."));
         } else {
-          setStatus(status, "Server login complete.");
+          setStatus(status, t("Server login complete.", "서버 로그인이 완료되었습니다."));
         }
 
         window.location.href = welcomeUrl(session.roleIntent);
       } catch (error) {
-        setStatus(status, error.message || "Login could not be completed.");
+        setStatus(status, error.message || t("Login could not be completed.", "로그인을 완료할 수 없습니다."));
       } finally {
         setSubmitState(submit, false);
       }
@@ -298,13 +303,21 @@
     const token = sessionStorage.getItem(serverTokenKey);
     const params = new URLSearchParams(window.location.search);
     const intent = validIntents.has(params.get("intent")) ? params.get("intent") : session?.roleIntent || "maker";
-    const displayName = session?.displayName || (token ? "Artihubs member" : "Guest");
+    const displayName = session?.displayName || (token ? t("Artihubs member", "Artihubs 회원") : t("Guest", "게스트"));
     const signedIn = Boolean(session?.displayName || token);
 
-    document.querySelector("[data-welcome-name]").textContent = signedIn ? displayName : "Welcome to Artihubs";
+    document.querySelector("[data-welcome-name]").textContent = signedIn
+      ? displayName
+      : t("Welcome to Artihubs", "Artihubs에 오신 것을 환영합니다.");
     document.querySelector("[data-welcome-status]").textContent = signedIn
-      ? "Your profile is private until reviewed and approved for publication."
-      : "Create an account or sign in to open your private workspace.";
+      ? t(
+        "Your profile is private until reviewed and approved for publication.",
+        "프로필은 검토와 공개 승인 전까지 비공개입니다."
+      )
+      : t(
+        "Create an account or sign in to open your private workspace.",
+        "계정을 만들거나 로그인하여 비공개 워크스페이스를 여세요."
+      );
 
     document.querySelectorAll("[data-task-panel]").forEach((panel) => {
       panel.classList.toggle("is-active", panel.dataset.taskPanel === intent);
@@ -314,7 +327,7 @@
     signOut?.addEventListener("click", () => {
       localStorage.removeItem(sessionKey);
       sessionStorage.removeItem(serverTokenKey);
-      window.location.href = "/login/";
+      window.location.href = isKoreanMode ? "/ko/login/" : "/login/";
     });
   }
 
