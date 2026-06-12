@@ -34,16 +34,28 @@
 
   const distanceFromSphereCenter = (point, cx, cy) => Math.hypot(point.x - cx, point.y - cy);
 
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const smoothstep = (value) => {
+    const t = clamp01(value);
+    return t * t * (3 - 2 * t);
+  };
+
   // Back-side orbit segments should not read as lines projected onto the globe face.
+  // Visibility is continuous so the orbit reads as one faint line, not chopped bands.
   const orbitVisibility = (point, cx, cy, r) => {
     const distance = distanceFromSphereCenter(point, cx, cy);
     const insideSphereDisk = distance <= r * 1.012;
 
     if (point.z < -0.035 && insideSphereDisk) return 0;
-    if (point.z < -0.2) return distance > r * 1.04 ? 0.18 : 0;
-    if (point.z < 0.04) return 0.45;
 
-    return 1;
+    const depthFade = 0.3 + 0.7 * smoothstep((point.z + 0.45) / 1.05);
+
+    if (point.z < -0.035) {
+      const limbFade = smoothstep((distance / r - 1.012) / 0.06);
+      return Math.min(depthFade, 0.22) * limbFade;
+    }
+
+    return depthFade;
   };
 
   const rectFromSvgCircle = (iframe, svg, circle) => {
@@ -145,52 +157,72 @@
     return { dpr, width: rect.width, height: rect.height };
   };
 
+  // The orbit line is stroked as contiguous polyline runs with butt caps and
+  // exactly shared endpoints so it reads as one continuous faint line —
+  // never dotted, dashed, or chopped segments.
   const drawOrbit = (ctx, cx, cy, r, rx, ry, tilt, color, alpha, width) => {
-    const segments = 260;
+    const segments = 360;
+    const samples = [];
+
+    for (let index = 0; index <= segments; index += 1) {
+      const angle = (index / segments) * Math.PI * 2;
+      const point = pointOnOrbit(cx, cy, rx, ry, tilt, angle);
+      samples.push({ point, visibility: orbitVisibility(point, cx, cy, r) });
+    }
+
+    ctx.lineCap = "butt";
+    ctx.lineJoin = "round";
 
     for (let index = 0; index < segments; index += 1) {
-      const a1 = (index / segments) * Math.PI * 2;
-      const a2 = ((index + 1.08) / segments) * Math.PI * 2;
-      const mid = (a1 + a2) / 2;
-      const p1 = pointOnOrbit(cx, cy, rx, ry, tilt, a1);
-      const p2 = pointOnOrbit(cx, cy, rx, ry, tilt, a2);
-      const pMid = pointOnOrbit(cx, cy, rx, ry, tilt, mid);
-      const visibility = orbitVisibility(pMid, cx, cy, r);
-      if (visibility <= 0) continue;
+      const current = samples[index];
+      const next = samples[index + 1];
+      const visibility = (current.visibility + next.visibility) / 2;
+      if (visibility <= 0.004) continue;
 
       ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
+      ctx.moveTo(current.point.x, current.point.y);
+      ctx.lineTo(next.point.x, next.point.y);
       ctx.strokeStyle = rgba(color, alpha * visibility);
-      ctx.lineWidth = width * (visibility >= 0.8 ? 1 : 0.78);
-      ctx.lineCap = "round";
-      ctx.shadowColor = rgba(color, alpha * visibility * 0.55);
-      ctx.shadowBlur = visibility >= 0.8 ? 2.2 : 0.8;
+      ctx.lineWidth = width;
       ctx.stroke();
     }
   };
 
+  // Short restrained meteor afterimage: alpha and width taper smoothly from
+  // the satellite head down to the faint orbit line, so the trail appears to
+  // decay back into the orbit path rather than ending abruptly.
   const drawTrail = (ctx, cx, cy, r, rx, ry, tilt, angle, color, strong) => {
-    const length = strong ? 0.34 : 0.22;
-    const segments = strong ? 10 : 8;
+    const length = strong ? 0.52 : 0.36;
+    const segments = strong ? 26 : 20;
+    const headAlpha = strong ? 0.34 : 0.22;
+    const headWidth = strong ? 2.3 : 1.7;
+    const tailWidth = 1.05;
+
+    ctx.lineCap = "butt";
 
     for (let index = 0; index < segments; index += 1) {
-      const a1 = angle - (index / segments) * length;
-      const a2 = angle - ((index + 0.72) / segments) * length;
-      const p1 = pointOnOrbit(cx, cy, rx, ry, tilt, a1);
-      const p2 = pointOnOrbit(cx, cy, rx, ry, tilt, a2);
-      const pMid = pointOnOrbit(cx, cy, rx, ry, tilt, (a1 + a2) / 2);
-      const visibility = orbitVisibility(pMid, cx, cy, r);
-      if (visibility <= 0) continue;
+      const t1 = index / segments;
+      const t2 = (index + 1) / segments;
+      const p1 = pointOnOrbit(cx, cy, rx, ry, tilt, angle - t1 * length);
+      const p2 = pointOnOrbit(cx, cy, rx, ry, tilt, angle - t2 * length);
+      const visibility = orbitVisibility(p1, cx, cy, r);
+      if (visibility <= 0.004) continue;
 
-      const fade = (1 - index / segments) * visibility;
+      const decay = Math.pow(1 - (t1 + t2) / 2, 2.1);
+      const fade = decay * visibility;
 
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
-      ctx.strokeStyle = rgba(color, fade * (strong ? 0.36 : 0.22));
-      ctx.lineWidth = strong ? 2.2 : 1.35;
-      ctx.lineCap = "round";
+      ctx.strokeStyle = rgba(color, fade * headAlpha * 1.4);
+      ctx.lineWidth = tailWidth + (headWidth - tailWidth) * decay;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = rgba(color, fade * headAlpha * 0.3);
+      ctx.lineWidth = (tailWidth + (headWidth - tailWidth) * decay) * 2.6;
       ctx.stroke();
     }
   };

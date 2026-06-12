@@ -1717,7 +1717,7 @@ button:disabled,
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 0.88fr) minmax(460px, 1.12fr);
-  gap: 28px;
+  gap: 40px;
   align-items: center;
   width: min(1440px, calc(100% - 44px));
   min-height: calc(100svh - 118px);
@@ -1811,8 +1811,9 @@ button:disabled,
 
 .home-globe {
   position: relative;
-  min-height: 680px;
-  margin-right: -70px;
+  min-height: 660px;
+  margin-right: -18px;
+  padding: 14px 0;
   overflow: visible;
   border-radius: 50%;
   isolation: isolate;
@@ -1885,7 +1886,7 @@ button:disabled,
 
 .home-orbit {
   position: absolute;
-  inset: -6% -8%;
+  inset: -9% -12%;
   z-index: 2;
   overflow: visible;
   pointer-events: none;
@@ -2272,13 +2273,14 @@ button:disabled,
 
   .home-globe {
     grid-area: globe;
-    width: calc(100% + 84px);
-    margin: -4px -42px 0;
+    width: calc(100% + 48px);
+    margin: 2px -24px 0;
+    padding: 0;
     border-radius: 0;
   }
 
   .home-orbit {
-    inset: -7% -10%;
+    inset: -9% -12%;
     opacity: 0.94;
   }
 
