@@ -814,10 +814,14 @@ async function loadAdminRegions(countryId) {
   if (!adminCode) return [];
 
   const promise = (async () => {
-    let response = await fetch(`./assets/admin-regions-lite/${adminCode}-ADM1.geojson`, { cache: "force-cache" });
+    // Resolve against the script URL, not the document URL, so the KO route
+    // (/ko/living-globe-v2/) loads the same shared assets instead of 404ing.
+    const liteUrl = new URL(`./assets/admin-regions-lite/${adminCode}-ADM1.geojson`, import.meta.url);
+    const fullUrl = new URL(`./assets/admin-regions/${adminCode}-ADM1.geojson`, import.meta.url);
+    let response = await fetch(liteUrl, { cache: "force-cache" });
 
     if (!response.ok) {
-      response = await fetch(`./assets/admin-regions/${adminCode}-ADM1.geojson`, { cache: "force-cache" });
+      response = await fetch(fullUrl, { cache: "force-cache" });
     }
 
     if (!response.ok) {

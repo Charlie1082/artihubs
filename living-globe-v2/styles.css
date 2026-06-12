@@ -401,6 +401,30 @@ a {
   filter: none;
 }
 
+/* Desktop boundary-line parity (RQ-0013): the country-map SVG renders about
+   twice as large as on mobile, so the same non-scaling hairline reads as a
+   plain landmass. Scale stroke weight/contrast up on desktop only; the 701px
+   cutoff matches the script's 700px mobile-viewport breakpoint. */
+@media (min-width: 701px) {
+  .globe-stage.is-country-map .admin-region.is-visible:not(.is-lit) {
+    stroke: rgba(222, 236, 255, 0.62);
+    stroke-width: 1.7;
+  }
+
+  .globe-stage.is-country-map .admin-region.is-lit {
+    stroke-width: 1.85;
+  }
+
+  .globe-stage.is-country-map.is-country-zoomed .admin-region.is-visible:not(.is-lit) {
+    stroke: rgba(226, 238, 255, 0.68);
+    stroke-width: 1.85;
+  }
+
+  .globe-stage.is-country-map.is-country-zoomed .admin-region.is-lit {
+    stroke-width: 2;
+  }
+}
+
 .region-footprint {
   fill: color-mix(in srgb, var(--region-color) 32%, transparent);
   stroke: color-mix(in srgb, var(--region-color) 70%, rgba(255, 255, 255, 0.2));
