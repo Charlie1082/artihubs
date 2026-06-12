@@ -65,11 +65,34 @@ for (const page of pages) {
 // tokens in /ko/* visible text, outside the AL-0056 keep-English glossary.
 
 const koAllowedPhrases = [
-  "Beyond the Algorithm.",
-  "Living Globe",
   "Explore Hubs",
   "For Makers",
-  "For Seekers",
+  // RQ-0015 Addendum 1: locale-invariant English nav + CS-3 labels
+  "Globe Navigation",
+  "For Finders",
+  "Sign in",
+  "Sign Up",
+  "Contact Support",
+  "Scanning signal...",
+  "Living Globe",
+  "Open Living Globe",
+  "Maker Tag",
+  "Maker Tag.",
+  "Request Tag",
+  "Request Tag.",
+  "Grounded Maker Tags",
+  "Product surfaces",
+  "Signals become working records.",
+  "Private draft",
+  "Review gate",
+  "Public signal",
+  "Structured inquiry",
+  "Globe Map",
+  "AI ARX",
+  "AI ARX(AI 아릭스)",
+  "ARX",
+  "Cold DM",
+  "Finder",
   "Quiet Forge Lab",
   "Hanbit Interface",
   "Harbor Microfactory",
@@ -85,6 +108,30 @@ const koAllowedPhrases = [
 
 const koAllowedWords = new Set([
   "artihubs",
+  "arx",
+  "finder",
+  "finders",
+  "tag",
+  "tags",
+  "globe",
+  "map",
+  "navigation",
+  "product",
+  "surfaces",
+  "signals",
+  "become",
+  "working",
+  "records",
+  "private",
+  "draft",
+  "review",
+  "gate",
+  "public",
+  "structured",
+  "inquiry",
+  "sign",
+  "contact",
+  "support",
   "explore",
   "maker",
   "makers",
@@ -136,8 +183,8 @@ const dynamicScriptRequirements = [
     file: "explore/explore.js",
     markers: [
       "isKoreanMode",
-      "Artihubs 검색 중",
-      "아직 매칭이 없습니다",
+      "ARX가 등록된 Maker Tag를 검색하는 중",
+      "아직 근거 있는 Maker Tag가 없습니다",
       "메이커 데이터를 불러오지 못했습니다",
       "Artihubs가 이 검색을 완료하지 못했습니다",
     ],
@@ -167,7 +214,7 @@ function stripAllowed(segment) {
   let result = segment
     .replace(/[\w.+-]+@[\w.-]+\.\w+/g, " ")
     .replace(/https?:\/\/\S+/g, " ");
-  for (const phrase of koAllowedPhrases) {
+  for (const phrase of [...koAllowedPhrases].sort((a, b) => b.length - a.length)) {
     result = result.split(phrase).join(" ");
   }
   return result;
